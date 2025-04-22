@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ruleta Trapitos Al Sol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6a3093 0%, #a044ff 100%);
+            --category-autoconcepto: linear-gradient(135deg, #9b59b6 0%, #c39bd3 100%);
+            --category-relaciones: linear-gradient(135deg, #e74c3c 0%, #f5b7b1 100%);
+            --category-cultura: linear-gradient(135deg, #3498db 0%, #aed6f1 100%);
+            --category-experiencias: linear-gradient(135deg, #f39c12 0%, #fad7a0 100%);
+            --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --shadow-strong: 0 15px 35px rgba(0, 0, 0, 0.2);
+            --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fa;
+            background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="%23f0f0f0" fill-opacity="0.4"><path d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z"></path></g></svg>');
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Header */
+        .game-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+            position: relative;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 300;
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+        
+        /* Ruleta */
+        .wheel-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 40px;
+            padding-top: 40px; /* Espacio para el indicador */
+        }
+        
+        .wheel {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%; /* Mantiene la proporción circular */
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: var(--shadow-strong);
+            transition: transform 5s cubic-bezier(0.1, 0.2, 0.1, 1);
+            transform: rotate(0deg);
+            background-color: #2c3e50;
+        }
+        
+        .wheel-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+        
+        .wheel-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        .wheel-content .emoji {
+            font-size: 3.5rem; /* Aumentamos el tamaño del emoji */
+            display: block;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra para mejor visibilidad */
+        }
+        
+        .spin-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 25%;
+            height: 25%;
+            background: white;
+            border-radius: 50%;
+            border: 5px solid #6a3093;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #6a3093;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .spin-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .spin-indicator {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background: #e74c3c;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 5;
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .popup {
+            background-color: #fff;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transition: all 0.4s var(--transition-bounce);
+            overflow: hidden;
+            animation: slideDown 0.5s var(--transition-bounce) forwards;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Background por categoría */
+        .popup[data-category="autoconcepto"] {
+            background: #f4ecf7;
+            border: 2px solid #9b59b6;
+        }
+        
+        .popup[data-category="relaciones"] {
+            background: #fdedec;
+            border: 2px solid #e74c3c;
+        }
+        
+        .popup[data-category="cultura"] {
+            background: #eaf2f8;
+            border: 2px solid #3498db;
+        }
+        
+        .popup[data-category="experiencias"] {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+        }
+        
+        .popup-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .popup-emoji {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .popup-title {
+            flex: 1;
+        }
+        
+        .popup-title h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        
+        .popup-title p {
+            margin: 5px 0 0 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .popup[data-category="autoconcepto"] .popup-title h2 {
+            color: #9b59b6;
+        }
+        
+        .popup[data-category="relaciones"] .popup-title h2 {
+            color: #e74c3c;
+        }
+        
+        .popup[data-category="cultura"] .popup-title h2 {
+            color: #3498db;
+        }
+        
+        .popup[data-category="experiencias"] .popup-title h2 {
+            color: #f39c12;
+        }
+        
+        .challenge {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 12px;
+            font-weight: 400;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .challenge::before {
+            content: """;
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 3rem;
+            color: rgba(0, 0, 0, 0.1);
+            font-family: Georgia, serif;
+        }
+        
+        .challenge::after {
+            content: """;
+            position: absolute;
+            bottom: -15px;
+            right: 10px;
+            font-size: 3rem;
+            color: rgba(0, 0, 0, 0.1);
+            font-family: Georgia, serif;
+        }
+        
+        .clue-container {
+            margin-top: 20px;
+        }
+        
+        .clue-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #34495e;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .clue-button:hover {
+            background-color: #2c3e50;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .clue-button::after {
+            content: "▼";
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .clue-button.active::after {
+            transform: rotate(180deg);
+        }
+        
+        .clue-content {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            display: none;
+            font-size: 1rem;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #34495e;
+        }
+        
+        .popup-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .close-popup {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .close-popup:hover {
+            background-color: #95a5a6;
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .wheel-content {
+                font-size: 0.7rem;
+            }
+            
+            .wheel-content .emoji {
+                font-size: 1.5rem;
+            }
+            
+            .popup {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .challenge {
+                font-size: 1rem;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-header">
+            <h1>Trapitos Al Sol</h1>
+            <p class="subtitle">Ruleta de Cartas de Apertura</p>
+        </div>
+        
+        <div class="wheel-container">
+            <div class="spin-indicator"></div>
+            <div class="wheel" id="wheel">
+                <!-- Las secciones de la ruleta serán generadas por JS -->
+            </div>
+            <button class="spin-button" id="spinBtn">GIRAR</button>
+        </div>
+    </div>
+    
+    <!-- Popup para tarjeta de apertura -->
+    <div class="popup-overlay" id="card-popup">
+        <div class="popup" id="popup">
+            <div class="popup-header">
+                <div class="popup-emoji" id="popup-emoji">👕</div>
+                <div class="popup-title">
+                    <h2 id="popup-category-title">Lo Que Nunca Falta</h2>
+                    <p id="popup-category-subtitle">(Autoconcepto)</p>
+                </div>
+            </div>
+            
+            <div class="challenge" id="popup-challenge">
+                Como si fuera una película de misterio, describe qué es el autoconcepto.
+            </div>
+            
+            <div class="clue-container">
+                <button class="clue-button" id="clue-button">Mostrar Clave</button>
+                <div class="clue-content" id="clue-content">
+                    Se refiere a la opinión que una persona tiene sobre sí misma, incluyendo un juicio de valor asociado. Es la imagen mental que hemos creado sobre nosotros mismos, basada en nuestras experiencias, juicios y opiniones.
+                </div>
+            </div>
+            
+            <div class="popup-buttons">
+                <button class="close-popup" id="close-popup">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Esperar a que el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Datos de las cartas
+            const aperturasData = {
+                autoconcepto: [
+                    {
+                        emoji: "👕",
+                        title: "Lo que nunca falta",
+                        subtitle: "(Autoconcepto)",
+                        challenge: "Como si fuera una película de misterio, describe qué es el autoconcepto.",
+                        clue: "Se refiere a la opinión que una persona tiene sobre sí misma, incluyendo un juicio de valor asociado. Es la imagen mental que hemos creado sobre nosotros mismos, basada en nuestras experiencias, juicios y opiniones."
+                    },
+                    {
+                        emoji: "👕",
+                        title: "Lo que nunca falta",
+                        subtitle: "(Autoconcepto)",
+                        challenge: "En forma de poema, explica qué es la imagen personal.",
+                        clue: "Es la percepción que los demás tienen de nosotros basada en nuestra apariencia, comportamiento y forma de comunicarnos. Funciona como una carta de presentación que expresa cómo cada individuo pretende comunicarse y lo que transmite con su presencia."
+                    },
+                    {
+                        emoji: "👕",
+                        title: "Lo que nunca falta",
+                        subtitle: "(Autoconcepto)",
+                        challenge: "Usa 5 palabras para explicar qué es la diversidad funcional.",
+                        clue: "La diversidad funcional se entiende como la diferencia de funcionamiento de una persona al realizar las tareas habituales (desplazarse, leer, agarrar, ir al baño, comunicarse, relacionarse, etc.) de manera diferente a la mayoría de la población."
+                    },
+                    {
+                        emoji: "👕",
+                        title: "Lo que nunca falta",
+                        subtitle: "(Autoconcepto)",
+                        challenge: "A manera de pregunta, define qué son los sentimientos.",
+                        clue: "Son estados afectivos del ánimo que se producen por causas que lo impresionan, ya sean alegres y felices, o dolorosas y tristes. Surgen como resultado de una emoción que permite que el sujeto sea consciente de su estado anímico."
+                    }
+                ],
+                relaciones: [
+                    {
+                        emoji: "👖",
+                        title: "Lo que heredé",
+                        subtitle: "(Relaciones)",
+                        challenge: "Cuéntanos qué es la privacidad como si estuvieras contando una historia de terror.",
+                        clue: "Es el ámbito de la vida privada que una persona tiene derecho a proteger de cualquier intromisión."
+                    },
+                    {
+                        emoji: "👖",
+                        title: "Lo que heredé",
+                        subtitle: "(Relaciones)",
+                        challenge: "Usando un ejemplo, dinos qué es el amor romántico.",
+                        clue: "Es un vínculo apasionado que une a dos personas en una relación íntima y emocional, caracterizado por una combinación de elementos emocionales, como el deseo, la pasión, la intimidad y un fuerte compromiso."
+                    },
+                    {
+                        emoji: "👖", 
+                        title: "Lo que heredé",
+                        subtitle: "(Relaciones)",
+                        challenge: "A modo de chisme: ¿qué es la diversidad para ti?",
+                        clue: "Se refiere a la variedad, desemejanza o diferencia entre personas, animales o cosas; implica la coexistencia de múltiples formas, expresiones, opiniones, culturas o perspectivas dentro de una sociedad o entorno determinado."
+                    },
+                    {
+                        emoji: "👖",
+                        title: "Lo que heredé",
+                        subtitle: "(Relaciones)",
+                        challenge: "Explica qué es la identidad sexual como si se lo contaras a un niño pequeño.",
+                        clue: "La identidad sexual describe el patrón de sentimientos de atracción emocional, romántica o sexual que una persona tiene hacia hombres, mujeres, ambos o ninguno de estos dos sexos."
+                    }
+                ],
+                cultura: [
+                    {
+                        emoji: "👟",
+                        title: "Lo que uso sin pensar",
+                        subtitle: "(Cultura)",
+                        challenge: "Cuéntanos una historia tipo \"lo que le pasó al amigo de un amigo\" para explicar qué es la justicia social.",
+                        clue: "Es el principio que busca garantizar la igualdad de derechos y oportunidades para todas las personas, sin importar su origen, género, condición socioeconómica, raza o creencias."
+                    },
+                    {
+                        emoji: "👟",
+                        title: "Lo que uso sin pensar",
+                        subtitle: "(Cultura)",
+                        challenge: "Da tres ejemplos de diversidad lingüistica, ¡cada uno en un acento diferente!.",
+                        clue: "Se refiere a la coexistencia de múltiples lenguas dentro de una comunidad, país o región del mundo. Esta diversidad incluye tanto idiomas oficiales como lenguas indígenas, dialectos y variantes lingüísticas, y refleja la riqueza cultural, histórica y social de los pueblos."
+                    },
+                    {
+                        emoji: "👟",
+                        title: "Lo que uso sin pensar",
+                        subtitle: "(Cultura)",
+                        challenge: "Inventa un mito o leyenda para contarnos qué es la identidad cultural.",
+                        clue: "Es el conjunto de manifestaciones socioculturales (creencias, tradiciones, símbolos, costumbres y valores) que les provee a los individuos que conforman una comunidad un sentido de pertenencia y comunión con sus pares."
+                    },
+                    {
+                        emoji: "👟",
+                        title: "Lo que uso sin pensar",
+                        subtitle: "(Cultura)",
+                        challenge: "Explica qué es la idiosincrasia como si fueras un profesor de preescolar.",
+                        clue: "Se refiere al conjunto de rasgos, temperamento y carácter distintivos y propios de un individuo o de una colectividad."
+                    }
+                ],
+                experiencias: [
+                    {
+                        emoji: "🧳",
+                        title: "Lo que no quiero tirar",
+                        subtitle: "(Experiencias)",
+                        challenge: "En formato de frase motivacional, explica qué son para ti los logros y los fracasos.",
+                        clue: "Los logros representan la consecución de objetivos o metas propuestas, reflejando éxito en las acciones emprendidas. Por otro lado, los fracasos indican la no consecución de dichos objetivos, lo que puede ofrecer oportunidades valiosas de aprendizaje y crecimiento personal."
+                    },
+                    {
+                        emoji: "🧳",
+                        title: "Lo que no quiero tirar",
+                        subtitle: "(Experiencias)",
+                        challenge: "Como si estuvieras contando un chisme jugoso, explica qué significa para ti el aprendizaje.",
+                        clue: "Es el proceso mediante el cual una persona adquiere, modifica o refina conocimientos, habilidades, valores o actitudes a través de la experiencia, el estudio o la enseñanza. Este proceso implica un cambio relativamente permanente en el comportamiento o en la capacidad de responder de cierta manera."
+                    },
+                    {
+                        emoji: "🧳",
+                        title: "Lo que no quiero tirar",
+                        subtitle: "(Experiencias)",
+                        challenge: "Adopta la voz de un narrador de documentales de naturaleza y define lo que entiendes por madurez.",
+                        clue: "Es el proceso continuo de desarrollo y mejora de uno mismo en diversos aspectos de la vida, incluyendo el emocional, intelectual, espiritual, físico y social."
+                    },
+                    {
+                        emoji: "🧳",
+                        title: "Lo que no quiero tirar",
+                        subtitle: "(Experiencias)",
+                        challenge: "Explica el crecimiento como si fuera una receta de cocina.",
+                        clue: "Se refiere al estado de desarrollo pleno en el que una persona ha alcanzado su máximo potencial físico, emocional o intelectual. También se asocia con la capacidad de una persona para manejar situaciones de manera sensata y equilibrada, demostrando buen juicio y prudencia."
+                    }
+                ]
+            };
+            
+            // Categorías para la ruleta
+            const categories = [
+                { name: "autoconcepto", color: "#9b59b6", emoji: "👕", title: "Lo Que Nunca Falta" },
+                { name: "relaciones", color: "#e74c3c", emoji: "👖", title: "Lo Que Heredé" },
+                { name: "cultura", color: "#3498db", emoji: "👟", title: "Lo Que Uso Sin Pensar" },
+                { name: "experiencias", color: "#f39c12", emoji: "🧳", title: "Lo Que No Quiero Tirar" }
+            ];
+            
+            // Referencias a elementos del DOM
+            const wheel = document.getElementById('wheel');
+            const spinBtn = document.getElementById('spinBtn');
+            const popup = document.getElementById('popup');
+            const cardPopup = document.getElementById('card-popup');
+            const closePopupBtn = document.getElementById('close-popup');
+            const clueBtn = document.getElementById('clue-button');
+            const clueContent = document.getElementById('clue-content');
+            
+            // Configuración de la ruleta
+            const numberOfSections = 4; // Exactamente 4 secciones, una por categoría
+            let spinning = false;
+            let currentRotation = 0;
+            
+            // Crear secciones de la ruleta
+            function createWheelSections() {
+                // Limpiar la ruleta primero
+                wheel.innerHTML = '';
+                
+                const angle = 360 / numberOfSections;
+                
+                for (let i = 0; i < numberOfSections; i++) {
+                    const category = categories[i]; // Una sección por categoría
+                    
+                    const section = document.createElement('div');
+                    section.className = 'wheel-section';
+                    
+                    // Calcular el ángulo de rotación para esta sección
+                    section.style.transform = `rotate(${i * angle}deg)`;
+                    
+                    // Establecer el estilo y los datos
+                    section.style.background = getCategoryGradient(category.name);
+                    section.dataset.category = category.name;
+                    
+                    // Contenido de la sección
+                    const content = document.createElement('div');
+                    content.className = 'wheel-content';
+                    content.innerHTML = `<span class="emoji">${category.emoji}</span>`;
+                    
+                    section.appendChild(content);
+                    wheel.appendChild(section);
+                }
+            }
+            
+            // Obtener el gradiente de una categoría
+            function getCategoryGradient(categoryName) {
+                switch(categoryName) {
+                    case 'autoconcepto': 
+                        return 'var(--category-autoconcepto)';
+                    case 'relaciones': 
+                        return 'var(--category-relaciones)';
+                    case 'cultura': 
+                        return 'var(--category-cultura)';
+                    case 'experiencias': 
+                        return 'var(--category-experiencias)';
+                    default:
+                        return 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)';
+                }
+            }
+            
+            // Función para girar la ruleta
+            function spinWheel() {
+                if (spinning) return;
+                
+                spinning = true;
+                spinBtn.disabled = true;
+                
+                // Rotación actual más un número aleatorio de giros (entre 2 y 5 giros completos)
+                const extraRotation = 720 + Math.floor(Math.random() * 1080);
+                const targetRotation = currentRotation + extraRotation;
+                
+                // Animar la ruleta
+                wheel.style.transition = 'transform 5s cubic-bezier(0.1, 0.2, 0.1, 1)';
+                wheel.style.transform = `rotate(${targetRotation}deg)`;
+                
+                // Actualizar la rotación actual
+                currentRotation = targetRotation;
+                
+                // Determinar el resultado después de la animación
+                setTimeout(() => {
+                    const result = getResult();
+                    showResult(result);
+                    spinning = false;
+                    spinBtn.disabled = false;
+                }, 5000);
+            }
+            
+            // Función para determinar el resultado
+            function getResult() {
+                // Calcular el ángulo normalizado (0-360)
+                const normalizedAngle = currentRotation % 360;
+                
+                // Calcular qué sección está en la parte superior (opuesto al indicador)
+                const sectionAngle = 360 / numberOfSections;
+                const sectionIndex = Math.floor(((normalizedAngle + 180) % 360) / sectionAngle) % numberOfSections;
+                
+                // Obtener la categoría de la sección
+                const categoryName = wheel.children[sectionIndex].dataset.category;
+                
+                // Seleccionar una tarjeta aleatoria de esa categoría
+                const cards = aperturasData[categoryName];
+                const randomCardIndex = Math.floor(Math.random() * cards.length);
+                
+                return {
+                    category: categoryName,
+                    card: cards[randomCardIndex]
+                };
+            }
+            
+            // Función para mostrar el resultado
+            function showResult(result) {
+                // Actualizar el contenido del popup
+                document.getElementById('popup-emoji').textContent = result.card.emoji;
+                document.getElementById('popup-category-title').textContent = result.card.title;
+                document.getElementById('popup-category-subtitle').textContent = result.card.subtitle;
+                document.getElementById('popup-challenge').textContent = result.card.challenge;
+                document.getElementById('clue-content').textContent = result.card.clue;
+                
+                // Resetear el estado del botón de pista
+                clueBtn.classList.remove('active');
+                clueContent.style.display = 'none';
+                
+                // Aplicar estilo según la categoría
+                popup.dataset.category = result.category;
+                
+                // Mostrar el popup
+                cardPopup.style.display = 'flex';
+            }
+            
+            // Manejar el evento de clic en el botón de giro
+            spinBtn.addEventListener('click', spinWheel);
+            
+            // Toggle para mostrar/ocultar la pista
+            clueBtn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                
+                if (clueContent.style.display === 'block') {
+                    clueContent.style.display = 'none';
+                } else {
+                    clueContent.style.display = 'block';
+                }
+            });
+            
+            // Cerrar el popup
+            closePopupBtn.addEventListener('click', function() {
+                cardPopup.style.display = 'none';
+            });
+            
+            // También cerrar haciendo clic fuera del popup
+            cardPopup.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+            
+            // Inicializar la ruleta
+            createWheelSections();
+        });
+    </script>
+</body>
+</html>
