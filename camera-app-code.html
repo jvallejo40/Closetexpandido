@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplicación de Cámara</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    
+    .camera-container {
+      position: relative;
+      width: 100%;
+      background-color: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    
+    #video, #capturedImage {
+      width: 100%;
+      display: block;
+    }
+    
+    #canvas {
+      display: none;
+    }
+    
+    .button-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+    
+    button svg {
+      margin-right: 8px;
+    }
+    
+    .btn-start {
+      background-color: #3182ce;
+      color: white;
+    }
+    
+    .btn-start:hover {
+      background-color: #2c5282;
+    }
+    
+    .btn-capture {
+      background-color: #38a169;
+      color: white;
+    }
+    
+    .btn-capture:hover {
+      background-color: #2f855a;
+    }
+    
+    .btn-download {
+      background-color: #805ad5;
+      color: white;
+    }
+    
+    .btn-download:hover {
+      background-color: #6b46c1;
+    }
+    
+    .btn-reset {
+      background-color: #718096;
+      color: white;
+    }
+    
+    .btn-reset:hover {
+      background-color: #4a5568;
+    }
+    
+    .hidden {
+      display: none;
+    }
+
+    .camera-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .aspect-video {
+      aspect-ratio: 16/9;
+    }
+
+    #messageBox {
+      text-align: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      color: #fff;
+    }
+
+    .error {
+      background-color: #e53e3e;
+    }
+
+    .success {
+      background-color: #38a169;
+    }
+
+    .info {
+      background-color: #3182ce;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Aplicación de Cámara</h1>
+    
+    <div id="messageBox" class="hidden"></div>
+    
+    <div class="camera-container aspect-video">
+      <video id="video" class="hidden" autoplay playsinline></video>
+      <img id="capturedImage" class="hidden" alt="Foto capturada" />
+      <canvas id="canvas"></canvas>
+    </div>
+    
+    <div class="button-container">
+      <button id="startButton" class="btn-start">
+        <svg class="camera-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        Iniciar Cámara
+      </button>
+      
+      <button id="captureButton" class="btn-capture hidden">
+        <svg class="camera-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        Tomar Foto
+      </button>
+      
+      <button id="downloadButton" class="btn-download hidden">
+        Descargar Foto
+      </button>
+      
+      <button id="resetButton" class="btn-reset hidden">
+        Nueva Foto
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Referencias a elementos del DOM
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const capturedImage = document.getElementById('capturedImage');
+    const startButton = document.getElementById('startButton');
+    const captureButton = document.getElementById('captureButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const resetButton = document.getElementById('resetButton');
+    const messageBox = document.getElementById('messageBox');
+    
+    // Variable para almacenar el stream de la cámara
+    let stream = null;
+    
+    // Función para mostrar mensajes
+    function showMessage(message, type) {
+      messageBox.textContent = message;
+      messageBox.className = type;
+      messageBox.classList.remove('hidden');
+      
+      // Auto-ocultar después de 5 segundos
+      setTimeout(() => {
+        messageBox.classList.add('hidden');
+      }, 5000);
+    }
+    
+    // Iniciar la cámara
+    startButton.addEventListener('click', async () => {
+      try {
+        // Verificar si el navegador soporta getUserMedia
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Tu navegador no soporta el acceso a la cámara');
+        }
+        
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+        
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        capturedImage.classList.add('hidden');
+        
+        startButton.classList.add('hidden');
+        captureButton.classList.remove('hidden');
+        
+        showMessage('Cámara iniciada correctamente', 'info');
+      } catch (error) {
+        console.error('Error al acceder a la cámara:', error);
+        showMessage(`Error al acceder a la cámara: ${error.message}`, 'error');
+      }
+    });
+    
+    // Capturar foto
+    captureButton.addEventListener('click', () => {
+      try {
+        // Configurar el canvas con las dimensiones del video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Dibujar el frame actual del video en el canvas
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convertir a imagen
+        const imageDataURL = canvas.toDataURL('image/png');
+        capturedImage.src = imageDataURL;
+        
+        // Mostrar la imagen capturada y ocultar el video
+        video.classList.add('hidden');
+        capturedImage.classList.remove('hidden');
+        
+        // Detener la transmisión de la cámara
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+        
+        // Actualizar botones
+        captureButton.classList.add('hidden');
+        downloadButton.classList.remove('hidden');
+        resetButton.classList.remove('hidden');
+        
+        showMessage('Foto capturada correctamente', 'success');
+      } catch (error) {
+        console.error('Error al capturar la foto:', error);
+        showMessage('Error al capturar la foto', 'error');
+      }
+    });
+    
+    // Descargar foto
+    downloadButton.addEventListener('click', () => {
+      try {
+        const link = document.createElement('a');
+        link.href = capturedImage.src;
+        link.download = `foto_${new Date().toISOString().replace(/:/g, '-')}.png`;
+        link.click();
+        
+        showMessage('Descarga iniciada', 'success');
+      } catch (error) {
+        console.error('Error al descargar la foto:', error);
+        showMessage('Error al descargar la foto', 'error');
+      }
+    });
+    
+    // Reiniciar para tomar una nueva foto
+    resetButton.addEventListener('click', async () => {
+      try {
+        // Reiniciar estado
+        capturedImage.classList.add('hidden');
+        downloadButton.classList.add('hidden');
+        resetButton.classList.add('hidden');
+        
+        // Volver a iniciar la cámara
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+        
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        captureButton.classList.remove('hidden');
+        
+        showMessage('Cámara reiniciada', 'info');
+      } catch (error) {
+        console.error('Error al reiniciar la cámara:', error);
+        showMessage('Error al reiniciar la cámara', 'error');
+        startButton.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
