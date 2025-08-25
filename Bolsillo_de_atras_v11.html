@@ -68,13 +68,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- OPTIMIZACIÓN: Inyección de CSS minificado para no bloquear el renderizado ---
             const minifiedCss = `body{font-family:'Poppins',sans-serif}.card{transform-style:preserve-3d}.card-face{-webkit-backface-visibility:hidden;backface-visibility:hidden}.card-container.flipped .card{transform:rotateY(180deg)}.card-container{transition:transform .6s cubic-bezier(.25,1,.5,1),z-index 0s .4s}.card-face:before{content:'';position:absolute;top:15px;left:50%;transform:translateX(-50%);width:25px;height:25px;background-color:#2b2019;border-radius:9999px;border:2px solid #c5b8ac;z-index:10}.card-back::-webkit-scrollbar{width:8px}.card-back::-webkit-scrollbar-track{background:#e4d6c5}.card-back::-webkit-scrollbar-thumb{background-color:#a48976;border-radius:10px;border:2px solid #e4d6c5}.close-btn{position:absolute;top:10px;right:15px;font-size:2.5rem;font-weight:300;color:#a48976;cursor:pointer;line-height:1;transition:transform .2s,color .2s;z-index:15}.close-btn:hover{transform:scale(1.2);color:#234489}#welcome-popup{transition:opacity .5s ease-out}#welcome-popup.hidden{opacity:0;pointer-events:none}.receipt-box{font-family:'Alexandria',sans-serif;background-color:#fdfaf4;color:#234489;padding:2rem 1.5rem;border-radius:4px;box-shadow:0 5px 25px rgba(0,0,0,.3);width:100%;max-width:360px;animation:slideInUp .7s cubic-bezier(.25,1,.5,1) forwards}.receipt-box hr{border-top:1px dashed #234489;opacity:.4;margin:1rem 0}@keyframes slideInUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}#card-stage{cursor:grab;transition:transform .2s ease-out}#card-stage:active{cursor:grabbing}`;
             const styleSheet = document.createElement("style");
             styleSheet.innerText = minifiedCss;
             document.head.appendChild(styleSheet);
 
-            // --- OPTIMIZACIÓN: Variables encapsuladas en el scope del DOMContentLoaded ---
             const scriptUrl = 'https://script.google.com/macros/s/AKfycbyaxXxk1nyvKgXI-5UGtyEznN4OoSs02TIMq1aLB-cHfqQdG8GbhhlilJCH_U-VVw4YRg/exec';
             const cardStage = document.getElementById('card-stage');
             const loader = document.getElementById('loader');
@@ -90,23 +88,15 @@
             let poemsData = []; 
             let dragState = { isDragging: false, startX: 0, startY: 0, stageTranslateX: 0, stageTranslateY: 0, stageScale: 1, initialPinchDistance: 0 };
 
-            const imageData = [
-                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/rojo.png', color: '#FFADA6' },
-                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/naranja.png', color: '#FFD2A3' },
-                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/azul.png', color: '#85B4E1' },
-                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/violeta.png', color: '#C7C3D9' }
+            // --- SIMPLIFICACIÓN: Se usa un array simple de URLs ---
+            const imageUrls = [
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/rojo.png',
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/naranja.png',
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/azul.png',
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/violeta.png'
             ];
 
-            const getRandomImageData = () => imageData[Math.floor(Math.random() * imageData.length)];
-
-            const darkenColor = (hex, percent) => {
-                let [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
-                const factor = 1 - percent / 100;
-                r = Math.floor(r * factor);
-                g = Math.floor(g * factor);
-                b = Math.floor(b * factor);
-                return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-            };
+            const getRandomImageUrl = () => imageUrls[Math.floor(Math.random() * imageUrls.length)];
 
             const initFloatingCards = () => {
                 const cards = document.querySelectorAll('.card-container');
@@ -156,7 +146,7 @@
                 tempContainer.style.left = '-9999px';
                 tempContainer.style.width = '1080px';
                 tempContainer.style.height = '1920px';
-                tempContainer.style.backgroundColor = '#fdfaf4';
+                tempContainer.style.backgroundColor = '#fdfaf4'; // Color de fondo fijo
                 tempContainer.style.fontFamily = "'Alexandria', sans-serif";
                 tempContainer.style.color = '#234489';
                 tempContainer.style.display = 'flex';
@@ -260,7 +250,6 @@
                 cardStage.style.transition = 'transform 0.2s ease-out';
             };
             
-            // --- OPTIMIZACIÓN: Event listeners mejorados ---
             popupOverlay.addEventListener('click', closePopup);
             exploreBtn.addEventListener('click', closePopup);
             cardStage.addEventListener('mousedown', startDrag);
@@ -308,20 +297,18 @@
 
                     const fragment = document.createDocumentFragment();
                     poemsData.forEach((poem, index) => {
-                        const randomImage = getRandomImageData();
-                        const buttonBgColor = darkenColor(randomImage.color, 20); 
-
+                        const randomImageUrl = getRandomImageUrl();
+                        
                         const cardContainer = document.createElement('div');
                         cardContainer.className = "card-container absolute w-[240px] h-[360px] sm:w-[280px] sm:h-[420px] cursor-pointer";
                         cardContainer.style.willChange = 'transform';
-                        cardContainer.dataset.color = randomImage.color;
-                        cardContainer.dataset.imageUrl = randomImage.url;
                         cardContainer.dataset.poemIndex = index + 1;
 
+                        // --- SIMPLIFICACIÓN: Se eliminan los data-attributes de color e imagen ---
                         cardContainer.innerHTML = `
                             <div class="card relative w-full h-full transition-transform duration-700 rounded-lg shadow-2xl">
                                 <div class="card-face card-front absolute w-full h-full rounded-lg overflow-hidden bg-[#f4eadd] flex flex-col justify-center items-center p-5 gap-5">
-                                    <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${randomImage.url})"></div>
+                                    <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${randomImageUrl})"></div>
                                     <div class="text-center text-[#234489]">
                                         <div style="font-family: 'Alexandria', sans-serif;">
                                             <h1 class="text-3xl sm:text-4xl leading-tight">
@@ -332,13 +319,15 @@
                                         <h2 class="font-['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Haz clic para leer</h2>
                                     </div>
                                 </div>
+                                <!-- SIMPLIFICACIÓN: El fondo del reverso es blanco (#fdfaf4) -->
                                 <div class="card-face card-back relative w-full h-full rounded-lg overflow-hidden text-[#234489] flex flex-col" 
-                                     style="transform: rotateY(180deg); background-color: ${randomImage.color};">
+                                     style="transform: rotateY(180deg); background-color: #fdfaf4;">
                                     <div class="close-btn" title="Cerrar">&times;</div>
                                     <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto" style="white-space: pre-wrap;">${poem}</div>
-                                    <div class="mt-auto p-4 border-t border-white/50 flex justify-center items-center">
+                                    <div class="mt-auto p-4 border-t border-gray-200 flex justify-center items-center">
+                                        <!-- SIMPLIFICACIÓN: El color del botón es azul (#234489) -->
                                         <button class="download-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" 
-                                                style="background-color: ${buttonBgColor};">
+                                                style="background-color: #234489;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
                                             <span>Descargar Poema</span>
                                         </button>
@@ -351,14 +340,13 @@
                     
                     cardStage.appendChild(fragment);
 
-                    // --- OPTIMIZACIÓN: Delegación de eventos para mejorar el rendimiento ---
                     cardStage.addEventListener('click', (e) => {
                         const cardContainer = e.target.closest('.card-container');
                         if (!cardContainer) return;
 
                         if (e.target.closest('.close-btn')) {
                             cardContainer.classList.remove('flipped');
-                            cardContainer.style.zIndex = 1; // Un z-index bajo es suficiente
+                            cardContainer.style.zIndex = 1;
                             cardContainer.style.transform = cardContainer.dataset.initialTransform;
                             return;
                         }
