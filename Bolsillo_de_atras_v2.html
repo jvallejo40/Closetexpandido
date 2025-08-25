@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Poemas Revelados</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;700&family=Poppins:wght@300;400;500;600&family=Caveat:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* --- ESTILOS GLOBALES --- */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: fixed;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #2b2019;
+            color: #fdfaf4;
+        }
+        .receipt-box {
+            font-family: 'Alexandria', sans-serif;
+            background-color: #fdfaf4; color: #234489;
+            padding: 2rem 1.5rem; border-radius: 4px;
+            box-shadow: 0 5px 25px rgba(0,0,0,.3);
+            width: 100%; max-width: 360px;
+            animation: slideInUp .7s cubic-bezier(.25,1,.5,1) forwards;
+        }
+        .receipt-box hr { border-top: 1px dashed #234489; opacity: .4; margin: 1rem 0; }
+        @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        #welcome-popup { transition: opacity .5s ease-out; z-index: 200; }
+        #welcome-popup.hidden { opacity: 0; pointer-events: none; }
+        
+        .poem-content::-webkit-scrollbar { width: 8px; }
+        .poem-content::-webkit-scrollbar-track { background: #e4d6c5; }
+        .poem-content::-webkit-scrollbar-thumb { background-color: #a48976; border-radius: 10px; border: 2px solid #e4d6c5; }
+
+        /* --- ESTILOS PARA LA GALERÍA MÓVIL (POR DEFECTO) --- */
+        #card-stage.gallery-mode {
+            position: relative;
+            overflow-y: hidden;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            gap: 1.5rem;
+            padding: 0 1.5rem; 
+            align-items: center;
+            scrollbar-width: none;
+        }
+        #card-stage.gallery-mode::-webkit-scrollbar { display: none; }
+
+        .card-container {
+            position: relative;
+            width: 280px;
+            height: 420px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        
+        /* SOLUCIÓN: Simplificación radical para móvil. Solo existe la cara frontal. */
+        .card-back { display: none; }
+        .card-front { display: flex; }
+
+        #poem-modal {
+            transition: opacity 0.3s ease-in-out;
+            z-index: 300;
+        }
+        #modal-content {
+            animation: zoomIn 0.4s cubic-bezier(.25,1,.5,1) forwards;
+        }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .close-btn {
+            position: absolute; top: 10px; right: 15px; font-size: 2.5rem; font-weight: 300;
+            color: #a48976; cursor: pointer; line-height: 1; z-index: 15;
+            transition: transform .2s, color .2s;
+        }
+        .close-btn:hover { transform: scale(1.2); color: #234489; }
+        
+        /* --- ESTILOS PARA ESCRITORIO (SOBREESCRIBEN LOS DE MÓVIL) --- */
+        @media (min-width: 769px) {
+            #card-stage.gallery-mode {
+                display: block;
+                overflow: hidden;
+                padding: 0;
+            }
+            #card-stage {
+                perspective: 1500px;
+                cursor: grab;
+                transition: transform .2s ease-out;
+            }
+            #card-stage:active { cursor: grabbing; }
+
+            .card-container {
+                position: absolute;
+                will-change: transform, opacity;
+            }
+            .card {
+                position: relative;
+                width: 100%; height: 100%;
+                transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+                transform-style: preserve-3d;
+            }
+            .card-face {
+                position: absolute;
+                width: 100%; height: 100%;
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+            }
+            .card-front { display: flex !important; }
+            .card-back {
+                display: flex !important;
+                transform: rotateY(180deg); 
+            }
+            .card-container.flipped .card { 
+                transform: rotateY(180deg); 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="card-stage" class="absolute top-0 left-0 w-full h-full"></div>
+    <div id="loader" class="text-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">Cargando poemas...</div>
+
+    <div id="welcome-popup" class="fixed inset-0 flex items-center justify-center p-4">
+        <div id="popup-overlay" class="absolute inset-0 bg-black/60 cursor-pointer"></div>
+        <div class="receipt-box relative flex flex-col space-y-4">
+            <div class="text-center">
+                <h1 class="text-3xl leading-none"><span class="font-bold">El Closet</span><br><span class="font-light">Expandido</span></h1>
+                <p class="text-xs opacity-70 mt-1">Bolsillo de Atrás</p>
+            </div>
+            <hr />
+            <div class="space-y-1 text-sm">
+                <div class="flex justify-between"><span>FECHA:</span><span id="receipt-date">--/--/----</span></div>
+                <div class="flex justify-between"><span>ORDEN #:</span><span>0082025</span></div>
+            </div>
+            <hr />
+            <p class="text-sm text-center leading-relaxed !my-6">En este rincón digital podrás descubrir poemas inspirados en las vivencias de quienes han compartido sus secretos en el cajón de "Trapitos al Sol".</p>
+            <hr />
+            <div class="flex justify-between font-bold text-lg"><span>TOTAL POEMAS:</span><span id="poem-count-receipt">0</span></div>
+            <button id="explore-btn" class="!mt-8 w-full bg-[#234489] text-white font-bold py-3 px-10 rounded-md shadow-md hover:bg-blue-900 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234489] self-center hover:scale-105">EXPLORAR</button>
+        </div>
+    </div>
+
+    <div id="poem-modal" class="fixed inset-0 flex items-center justify-center p-4 bg-black/80 hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaxXxk1nyvKgXI-5UGtyEznN4OoSs02TIMq1aLB-cHfqQdG8GbhhlilJCH_U-VVw4YRg/exec';
+            const IMAGE_URLS = [
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/rojo.png',
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/naranja.png',
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/azul.png',
+                'https://www.jaimesiva.com/wp-content/uploads/2025/08/violeta.png'
+            ];
+
+            const cardStage = document.getElementById('card-stage');
+            const loader = document.getElementById('loader');
+            const welcomePopup = document.getElementById('welcome-popup');
+            const poemModal = document.getElementById('poem-modal');
+            
+            let poemsData = [];
+            let isMobile = false;
+            let desktopDragState = { isDragging: false, startX: 0, startY: 0, stageTranslateX: 0, stageTranslateY: 0, stageScale: 1 };
+
+            const checkIsMobile = () => window.innerWidth < 769;
+            const getRandomImageUrl = () => IMAGE_URLS[Math.floor(Math.random() * IMAGE_URLS.length)];
+            const closePopup = () => welcomePopup.classList.add('hidden');
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            };
+
+            const handleShareOrDownload = async (poemText, poemIndex, totalPoems) => {
+                const tempContainer = document.createElement('div');
+                tempContainer.style.cssText = `position: absolute; left: -9999px; width: 1080px; height: 1920px; background-color: #fdfaf4; font-family: 'Alexandria', sans-serif; color: #234489; display: flex; justify-content: center; align-items: center;`;
+                tempContainer.innerHTML = `<div style="width: 100%; height: 100%; padding: 80px 60px; display: flex; flex-direction: column; box-sizing: border-box;"><div style="text-align: center;"><h1 style="font-size: 80px; line-height: 1;"><span style="font-weight: 700;">El Closet</span><br><span style="font-weight: 300;">Expandido</span></h1><p style="font-size: 24px; opacity: 0.7; margin-top: 10px;">Bolsillo de Atrás</p></div><hr style="border-top: 2px dashed #234489; opacity: 0.4; margin: 40px 0; width: 100%;"><div style="font-size: 28px; display: flex; flex-direction: column; gap: 10px;"><div style="display: flex; justify-content: space-between;"><span>FECHA:</span><span>${new Date().toLocaleDateString('es-ES')}</span></div><div style="display: flex; justify-content: space-between;"><span>POEMA:</span><span>${poemIndex} / ${totalPoems}</span></div></div><hr style="border-top: 2px dashed #234489; opacity: 0.4; margin: 40px 0; width: 100%;"><div class="poem-ticket-content" style="flex-grow: 1; font-family: 'Poppins', sans-serif; line-height: 1.6; text-align: left; white-space: pre-wrap; overflow: hidden; color: #234489;">${poemText.trim()}</div><div style="margin-top: auto; text-align: center; padding-top: 40px; font-family: 'Poppins', sans-serif; font-size: 24px; color: #234489; opacity: 0.7; line-height: 1.4;"><p>Este poema es una obra generativa desarrollada por el laboratorio de creación intermedial "El Clóset Expandido", liderado por el profesor Jaime Vallejo. Forma parte del proyecto de investigación "Circuito Cuerpo Espacio" de la Facultad de Artes de la Universidad Antonio Nariño.</p></div></div>`;
+                document.body.appendChild(tempContainer);
+
+                const poemHolder = tempContainer.querySelector('.poem-ticket-content');
+                let fontSize = 40;
+                poemHolder.style.fontSize = fontSize + 'px';
+                while (poemHolder.scrollHeight > poemHolder.clientHeight && fontSize > 10) {
+                    fontSize--;
+                    poemHolder.style.fontSize = fontSize + 'px';
+                }
+
+                try {
+                    const canvas = await html2canvas(tempContainer, { scale: 1, useCORS: true });
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    const file = new File([blob], 'poema.png', { type: 'image/png' });
+
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], title: 'Un Poema Revelado', text: 'Descubre un poema de El Closet Expandido.' });
+                    } else {
+                        const link = document.createElement('a');
+                        link.download = 'poema.png';
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                    }
+                } catch (err) {
+                    console.error("Error al compartir o descargar:", err);
+                } finally {
+                    document.body.removeChild(tempContainer);
+                }
+            };
+
+            function renderCards(poems) {
+                const fragment = document.createDocumentFragment();
+                poems.forEach((poem, index) => {
+                    const cardContainer = document.createElement('div');
+                    cardContainer.className = "card-container";
+                    cardContainer.dataset.poemIndex = index + 1;
+                    cardContainer.dataset.poemText = poem; 
+                    cardContainer.innerHTML = `
+                        <div class="card h-full">
+                            <div class="card-face card-front flex flex-col justify-center items-center p-5 gap-5 rounded-lg overflow-hidden bg-[#f4eadd] shadow-lg h-full">
+                                <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${getRandomImageUrl()})"></div>
+                                <div class="text-center text-[#234489]">
+                                    <div style="font-family: 'Alexandria', sans-serif;"><h1 class="text-3xl sm:text-4xl leading-tight"><span class="font-weight: 700;">El Closet</span><br><span class="font-weight: 300;">Expandido</span></h1></div>
+                                    <h2 class="font['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Toca para leer</h2>
+                                </div>
+                            </div>
+                        </div>`;
+                    fragment.appendChild(cardContainer);
+                });
+                cardStage.appendChild(fragment);
+            }
+            
+            function createModalContent(poem, index, total) {
+                const modalContent = document.createElement('div');
+                modalContent.id = 'modal-content';
+                modalContent.className = 'relative w-[280px] h-[420px]';
+                modalContent.innerHTML = `
+                    <div class="card-face card-back flex flex-col rounded-lg text-[#234489] w-full h-full" style="background-color: #fdfaf4;">
+                        <div class="close-btn" title="Cerrar">&times;</div>
+                        <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto">${poem}</div>
+                        <div class="mt-auto p-4 border-t border-gray-200 flex justify-center items-center">
+                            <button class="share-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                                <span>Compartir Poema</span>
+                            </button>
+                        </div>
+                    </div>`;
+                return modalContent;
+            }
+
+            function initMobileExperience() {
+                cardStage.classList.add('gallery-mode');
+                cardStage.addEventListener('click', (e) => {
+                    const card = e.target.closest('.card-container');
+                    if (!card) return;
+
+                    const poemIndex = card.dataset.poemIndex;
+                    const poemData = card.dataset.poemText;
+                    
+                    poemModal.innerHTML = '';
+                    const modalContent = createModalContent(poemData, poemIndex, poemsData.length);
+                    poemModal.appendChild(modalContent);
+                    poemModal.classList.remove('hidden');
+
+                    // CORRECCIÓN: El listener se añade al modal completo para gestionar todos los clics
+                    const modalClickListener = (modalEvent) => {
+                        if (modalEvent.target === poemModal || modalEvent.target.closest('.close-btn')) {
+                            poemModal.classList.add('hidden');
+                            poemModal.removeEventListener('click', modalClickListener); // Limpiar el listener
+                        }
+                        if (modalEvent.target.closest('.share-btn')) {
+                            handleShareOrDownload(poemData, poemIndex, poemsData.length);
+                        }
+                    };
+                    poemModal.addEventListener('click', modalClickListener);
+                });
+            }
+
+            function initDesktopExperience() {
+                let topZ = 10;
+                cardStage.innerHTML = '';
+                renderCardsWithBacks(poemsData);
+
+                const cards = document.querySelectorAll('.card-container');
+                cards.forEach(card => {
+                    const depth = Math.random() * 0.6 + 0.2;
+                    const spreadFactor = 2.2;
+                    const virtualWidth = cardStage.clientWidth * spreadFactor;
+                    const virtualHeight = cardStage.clientHeight * spreadFactor;
+                    const offsetX = (virtualWidth - cardStage.clientWidth) / 2;
+                    const offsetY = (virtualHeight - cardStage.clientHeight) / 2;
+                    
+                    card.style.top = `${(Math.random() * virtualHeight) - offsetY}px`;
+                    card.style.left = `${(Math.random() * virtualWidth) - offsetX}px`;
+                    const randomRotate = (Math.random() - 0.5) * 40;
+                    card.style.transform = `rotate(${randomRotate}deg)`;
+                    card.style.zIndex = Math.floor(Math.random() * 5) + 2;
+                    
+                    card.dataset.depth = depth;
+                    card.dataset.rotate = randomRotate;
+
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('.share-btn')) {
+                            handleShareOrDownload(card.dataset.poemText, card.dataset.poemIndex, poemsData.length);
+                            return;
+                        }
+                        if (e.target.closest('.close-btn')) {
+                            card.classList.remove('flipped');
+                            card.style.transform = `rotate(${card.dataset.rotate}deg)`;
+                            return;
+                        }
+                        if (!card.classList.contains('flipped')) {
+                            topZ++;
+                            card.style.zIndex = topZ;
+                            const cardRect = card.getBoundingClientRect();
+                            const viewportCenterX = window.innerWidth / 2;
+                            const viewportCenterY = window.innerHeight / 2;
+                            const translateX = (viewportCenterX - (cardRect.left + cardRect.width / 2)) / desktopDragState.stageScale;
+                            const translateY = (viewportCenterY - (cardRect.top + cardRect.height / 2)) / desktopDragState.stageScale;
+                            card.style.transform = `translate(${translateX}px, ${translateY}px)`;
+                            card.classList.add('flipped');
+                        }
+                    });
+                });
+
+                const updateStageTransform = () => { cardStage.style.transform = `translate(${desktopDragState.stageTranslateX}px, ${desktopDragState.stageTranslateY}px) scale(${desktopDragState.stageScale})`; };
+                const startDrag = (e) => { if (e.target.closest('.card-container')) return; e.preventDefault(); desktopDragState.isDragging = true; desktopDragState.startX = e.clientX; desktopDragState.startY = e.clientY; cardStage.style.transition = 'none'; };
+                const drag = (e) => { if (!desktopDragState.isDragging) return; e.preventDefault(); const currentX = e.clientX; const currentY = e.clientY; desktopDragState.stageTranslateX += currentX - desktopDragState.startX; desktopDragState.stageTranslateY += currentY - desktopDragState.startY; desktopDragState.startX = currentX; desktopDragState.startY = currentY; updateStageTransform(); };
+                const endDrag = () => { desktopDragState.isDragging = false; cardStage.style.transition = 'transform 0.2s ease-out'; };
+                
+                cardStage.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', endDrag);
+                document.addEventListener('mouseleave', endDrag);
+
+                document.body.addEventListener('wheel', (e) => { if (e.target.closest('.card-back')) return; e.preventDefault(); desktopDragState.stageScale = Math.min(Math.max(desktopDragState.stageScale + (e.deltaY < 0 ? 0.1 : -0.1), 0.3), 2); updateStageTransform(); }, { passive: false });
+                document.body.addEventListener('mousemove', (e) => {
+                    if (desktopDragState.isDragging) return;
+                    requestAnimationFrame(() => {
+                        const moveX = (e.clientX - window.innerWidth / 2) / 10;
+                        const moveY = (e.clientY - window.innerHeight / 2) / 10;
+                        document.querySelectorAll('.card-container:not(.flipped)').forEach(card => {
+                            const depth = card.dataset.depth;
+                            const initialRotate = parseFloat(card.dataset.rotate);
+                            card.style.transform = `translateX(${moveX * depth}px) translateY(${moveY * depth}px) rotate(${initialRotate}deg)`;
+                        });
+                    });
+                });
+            }
+
+            function renderCardsWithBacks(poems) {
+                 const fragment = document.createDocumentFragment();
+                poems.forEach((poem, index) => {
+                    const cardContainer = document.createElement('div');
+                    cardContainer.className = "card-container";
+                    cardContainer.dataset.poemIndex = index + 1;
+                    cardContainer.dataset.poemText = poem; 
+                    cardContainer.innerHTML = `
+                        <div class="card">
+                            <div class="card-face card-front flex flex-col justify-center items-center p-5 gap-5 rounded-lg overflow-hidden bg-[#f4eadd] shadow-lg">
+                                <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${getRandomImageUrl()})"></div>
+                                <div class="text-center text-[#234489]">
+                                    <div style="font-family: 'Alexandria', sans-serif;"><h1 class="text-3xl sm:text-4xl leading-tight"><span class="font-weight: 700;">El Closet</span><br><span class="font-weight: 300;">Expandido</span></h1></div>
+                                    <h2 class="font['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Toca para leer</h2>
+                                </div>
+                            </div>
+                            <div class="card-face card-back flex flex-col rounded-lg text-[#234489]" style="background-color: #fdfaf4;">
+                                <div class="close-btn" title="Cerrar">&times;</div>
+                                <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto">${poem}</div>
+                                <div class="mt-auto p-4 border-t border-gray-200 flex justify-center items-center">
+                                    <button class="share-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                                        <span>Compartir Poema</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    fragment.appendChild(cardContainer);
+                });
+                cardStage.appendChild(fragment);
+            }
+
+            async function initializeApp() {
+                try {
+                    const response = await fetch(SCRIPT_URL);
+                    if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
+                    poemsData = await response.json();
+
+                    if (!poemsData || poemsData.length === 0) {
+                        loader.textContent = 'No se encontraron poemas.';
+                        return;
+                    }
+                    
+                    shuffleArray(poemsData);
+
+                    document.getElementById('receipt-date').textContent = new Date().toLocaleDateString('es-ES');
+                    document.getElementById('poem-count-receipt').textContent = poemsData.length;
+                    
+                    isMobile = checkIsMobile();
+                    if (isMobile) {
+                        renderCards(poemsData);
+                        initMobileExperience();
+                    } else {
+                        initDesktopExperience();
+                    }
+                    
+                    welcomePopup.addEventListener('click', (e) => {
+                        if (e.target.id === 'popup-overlay' || e.target.closest('#explore-btn')) {
+                            closePopup();
+                        }
+                    });
+                    
+                    loader.style.display = 'none';
+
+                    window.addEventListener('resize', () => {
+                        const wasMobile = isMobile;
+                        isMobile = checkIsMobile();
+                        if (wasMobile !== isMobile) {
+                            window.location.reload();
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Fallo la inicialización de la aplicación:', error);
+                    loader.textContent = 'Error al cargar. Intenta de nuevo.';
+                }
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
