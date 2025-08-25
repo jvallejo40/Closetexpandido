@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poemas Revelados</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;700&family=Poppins:wght@300;400;500;600&family=Caveat:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* Custom styles for elements not easily handled by Tailwind utilities */
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* 3D Transform styles for the card flip */
+        .card {
+            transform-style: preserve-3d;
+        }
+        .card-face {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .card-container.flipped .card {
+            transform: rotateY(180deg);
+        }
+        
+        /* Enhanced transition for smooth centering and returning */
+        .card-container {
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), z-index 0s 0.4s;
+        }
+
+        /* Custom pseudo-element for the tag hole effect */
+        .card-face::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 25px;
+            background-color: #2b2019; /* Matches the body background */
+            border-radius: 9999px;
+            border: 2px solid #c5b8ac;
+            z-index: 10;
+        }
+
+        /* Custom scrollbar for the poem text */
+        .card-back::-webkit-scrollbar {
+            width: 8px;
+        }
+        .card-back::-webkit-scrollbar-track {
+            background: #e4d6c5;
+        }
+        .card-back::-webkit-scrollbar-thumb {
+            background-color: #a48976;
+            border-radius: 10px;
+            border: 2px solid #e4d6c5;
+        }
+        
+        /* Styles for the card's close button */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #a48976;
+            cursor: pointer;
+            line-height: 1;
+            transition: transform 0.2s, color 0.2s;
+            z-index: 15;
+        }
+        .close-btn:hover {
+            transform: scale(1.2);
+            color: #234489;
+        }
+
+        /* Styles for the welcome popup */
+        #welcome-popup {
+            transition: opacity 0.5s ease-out;
+        }
+        #welcome-popup.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .receipt-box {
+            font-family: 'Alexandria', sans-serif;
+            background-color: #fdfaf4;
+            color: #234489;
+            padding: 2rem 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 360px;
+            /* MEJORA 2: Se aplica la animación de entrada */
+            animation: slideInUp 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .receipt-box hr {
+            border-top: 1px dashed #234489;
+            opacity: 0.4;
+            margin: 1rem 0;
+        }
+        
+        /* MEJORA 2: Keyframes para la animación de entrada del pop-up */
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Cursor style for draggable canvas */
+        #card-stage {
+            cursor: grab;
+            transition: transform 0.2s ease-out;
+        }
+        #card-stage:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="bg-[#2b2019] text-[#fdfaf4] flex flex-col items-center h-screen w-screen overflow-hidden">
+
+    <div id="card-stage" class="absolute top-0 left-0 w-full h-full" style="perspective: 1500px;">
+        </div>
+
+    <div id="loader" class="text-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        Cargando poemas...
+    </div>
+
+    <div id="welcome-popup" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div id="popup-overlay" class="absolute inset-0 bg-black/60 cursor-pointer"></div>
+        
+        <div class="receipt-box relative flex flex-col space-y-4">
+            <div class="text-center">
+                <h1 class="text-3xl leading-none"><span class="font-bold">El Closet</span><br><span class="font-light">Expandido</span></h1>
+                <p class="text-xs opacity-70 mt-1">Bolsillo de Atrás</p>
+            </div>
+            
+            <hr />
+
+            <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                    <span>FECHA:</span>
+                    <span id="receipt-date">--/--/----</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>ORDEN #:</span>
+                    <span>0082025</span>
+                </div>
+            </div>
+
+            <hr />
+
+            <p class="text-sm text-center leading-relaxed !my-6">
+                En este rincón digital podrás descubrir poemas inspirados en las vivencias de quienes han compartido sus secretos en el cajón de "Trapitos al Sol".
+            </p>
+
+            <hr />
+
+            <div class="flex justify-between font-bold text-lg">
+                <span>TOTAL POEMAS:</span>
+                <span id="poem-count-receipt">0</span>
+            </div>
+
+            <button id="explore-btn" class="!mt-8 w-full bg-[#234489] text-white font-bold py-3 px-10 rounded-md shadow-md hover:bg-blue-900 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234489] self-center hover:scale-105">
+                EXPLORAR
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbyaxXxk1nyvKgXI-5UGtyEznN4OoSs02TIMq1aLB-cHfqQdG8GbhhlilJCH_U-VVw4YRg/exec';
+
+            const cardStage = document.getElementById('card-stage');
+            const loader = document.getElementById('loader');
+            
+            const welcomePopup = document.getElementById('welcome-popup');
+            const popupOverlay = document.getElementById('popup-overlay');
+            const exploreBtn = document.getElementById('explore-btn');
+            const poemCountEl = document.getElementById('poem-count-receipt');
+            const receiptDateEl = document.getElementById('receipt-date');
+
+            receiptDateEl.textContent = new Date().toLocaleDateString('es-ES');
+
+            let topZ = 10;
+            let bottomZ = 1;
+            let poemsData = []; 
+
+            let isDragging = false;
+            let startX, startY;
+            let stageTranslateX = 0, stageTranslateY = 0;
+            let stageScale = 1;
+            let initialPinchDistance = 0;
+
+            const imageData = [
+                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/rojo.png', color: '#FFADA6' },
+                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/naranja.png', color: '#FFD2A3' },
+                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/azul.png', color: '#85B4E1' },
+                { url: 'https://www.jaimesiva.com/wp-content/uploads/2025/08/violeta.png', color: '#C7C3D9' }
+            ];
+
+            const getRandomImageData = () => imageData[Math.floor(Math.random() * imageData.length)];
+
+            const darkenColor = (hex, percent) => {
+                let [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
+                const factor = 1 - percent / 100;
+                r = Math.floor(r * factor);
+                g = Math.floor(g * factor);
+                b = Math.floor(b * factor);
+                return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+            };
+
+            const initFloatingCards = () => {
+                const cards = document.querySelectorAll('.card-container');
+                cards.forEach(card => {
+                    const depth = Math.random() * 0.6 + 0.2;
+                    const spreadFactor = 2.2; 
+                    const virtualWidth = cardStage.clientWidth * spreadFactor;
+                    const virtualHeight = cardStage.clientHeight * spreadFactor;
+                    const offsetX = (virtualWidth - cardStage.clientWidth) / 2;
+                    const offsetY = (virtualHeight - cardStage.clientHeight) / 2;
+                    const randomTop = (Math.random() * virtualHeight) - offsetY;
+                    const randomLeft = (Math.random() * virtualWidth) - offsetX;
+                    const randomRotate = (Math.random() - 0.5) * 40;
+                    const initialTransform = `rotate(${randomRotate}deg)`;
+
+                    card.style.top = `${randomTop}px`;
+                    card.style.left = `${randomLeft}px`;
+                    card.style.transform = initialTransform;
+                    card.style.zIndex = Math.floor(Math.random() * 5) + 2;
+                    
+                    card.dataset.depth = depth;
+                    card.dataset.rotate = randomRotate;
+                    card.dataset.initialTransform = initialTransform;
+                });
+            };
+            
+            const moveItems = (x, y) => {
+                const cards = document.querySelectorAll('.card-container');
+                cards.forEach(card => {
+                    if (card.classList.contains('flipped')) return;
+                    
+                    const depth = card.dataset.depth;
+                    const initialRotate = parseFloat(card.dataset.rotate);
+                    const moveX = (x * depth);
+                    const moveY = (y * depth);
+                    card.style.transform = `translateX(${moveX}px) translateY(${moveY}px) rotate(${initialRotate}deg)`;
+                });
+            };
+            
+            const closePopup = () => {
+                welcomePopup.classList.add('hidden');
+            };
+
+            popupOverlay.addEventListener('click', closePopup);
+            exploreBtn.addEventListener('click', closePopup);
+
+            const handleDownload = (poemText, poemIndex, totalPoems) => {
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.width = '1080px';
+                tempContainer.style.height = '1920px';
+                tempContainer.style.backgroundColor = '#fdfaf4';
+                tempContainer.style.fontFamily = "'Alexandria', sans-serif";
+                tempContainer.style.color = '#234489';
+                tempContainer.style.display = 'flex';
+                tempContainer.style.justifyContent = 'center';
+                tempContainer.style.alignItems = 'center';
+                
+                const receiptHTML = `
+                    <div style="width: 100%; height: 100%; padding: 80px 60px; display: flex; flex-direction: column; box-sizing: border-box;">
+                        <div style="text-align: center;">
+                            <h1 style="font-size: 80px; line-height: 1;">
+                                <span style="font-weight: 700;">El Closet</span><br>
+                                <span style="font-weight: 300;">Expandido</span>
+                            </h1>
+                            <p style="font-size: 24px; opacity: 0.7; margin-top: 10px;">Bolsillo de Atrás</p>
+                        </div>
+                        
+                        <hr style="border-top: 2px dashed #234489; opacity: 0.4; margin: 40px 0; width: 100%;">
+
+                        <div style="font-size: 28px; display: flex; flex-direction: column; gap: 10px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>FECHA:</span>
+                                <span>${new Date().toLocaleDateString('es-ES')}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>POEMA:</span>
+                                <span>${poemIndex} / ${totalPoems}</span>
+                            </div>
+                        </div>
+
+                        <hr style="border-top: 2px dashed #234489; opacity: 0.4; margin: 40px 0; width: 100%;">
+
+                        <div id="poem-ticket-content" style="flex-grow: 1; font-family: 'Poppins', sans-serif; line-height: 1.6; text-align: left; white-space: pre-wrap; overflow: hidden; color: #234489;">
+                            ${poemText.trim()}
+                        </div>
+
+                        <div style="margin-top: auto; text-align: center; padding-top: 40px; font-family: 'Poppins', sans-serif; font-size: 24px; color: #234489; opacity: 0.7; line-height: 1.4;">
+                            <p>Este poema es una obra generativa desarrollada por el laboratorio de creación intermedial "El Clóset Expandido", liderado por el profesor Jaime Vallejo. Forma parte del proyecto de investigación "Circuito Cuerpo Espacio" de la Facultad de Artes de la Universidad Antonio Nariño.</p>
+                        </div>
+                    </div>
+                `;
+                
+                tempContainer.innerHTML = receiptHTML;
+                document.body.appendChild(tempContainer);
+
+                const poemHolder = tempContainer.querySelector('#poem-ticket-content');
+                const availableHeight = poemHolder.clientHeight;
+                let fontSize = 40;
+                poemHolder.style.fontSize = fontSize + 'px';
+
+                while (poemHolder.scrollHeight > availableHeight && fontSize > 10) {
+                    fontSize--;
+                    poemHolder.style.fontSize = fontSize + 'px';
+                }
+
+                html2canvas(tempContainer, { scale: 1 }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'poema.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    document.body.removeChild(tempContainer);
+                });
+            };
+
+            const updateStageTransform = () => {
+                cardStage.style.transform = `translate(${stageTranslateX}px, ${stageTranslateY}px) scale(${stageScale})`;
+            };
+
+            const startDrag = (e) => {
+                if (e.target.closest('.card-container')) return;
+                e.preventDefault();
+                
+                if (e.touches && e.touches.length === 2) {
+                    initialPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                } else {
+                    isDragging = true;
+                    startX = e.clientX || e.touches[0].clientX;
+                    startY = e.clientY || e.touches[0].clientY;
+                    cardStage.style.transition = 'none';
+                }
+            };
+
+            const drag = (e) => {
+                e.preventDefault();
+                if (e.touches && e.touches.length === 2 && initialPinchDistance > 0) {
+                    const newPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    const scaleRatio = newPinchDistance / initialPinchDistance;
+                    stageScale = Math.min(Math.max(stageScale * scaleRatio, 0.3), 2);
+                    initialPinchDistance = newPinchDistance;
+                    updateStageTransform();
+                } else if (isDragging) {
+                    const currentX = e.clientX || e.touches[0].clientX;
+                    const currentY = e.clientY || e.touches[0].clientY;
+                    const dx = currentX - startX;
+                    const dy = currentY - startY;
+                    stageTranslateX += dx;
+                    stageTranslateY += dy;
+                    startX = currentX;
+                    startY = currentY;
+                    updateStageTransform();
+                }
+            };
+
+            const endDrag = (e) => {
+                isDragging = false;
+                initialPinchDistance = 0;
+                cardStage.style.transition = 'transform 0.2s ease-out';
+            };
+
+            cardStage.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('mouseleave', endDrag);
+
+            cardStage.addEventListener('touchstart', startDrag, { passive: false });
+            document.addEventListener('touchmove', drag, { passive: false });
+            document.addEventListener('touchend', endDrag);
+            
+            document.body.addEventListener('wheel', (e) => {
+                if (e.target.closest('.card-back')) return;
+                e.preventDefault();
+                const zoomIntensity = 0.1;
+                const direction = e.deltaY < 0 ? 1 : -1;
+                stageScale = Math.min(Math.max(stageScale + zoomIntensity * direction, 0.3), 2);
+                updateStageTransform();
+            }, { passive: false });
+
+            document.body.addEventListener('mousemove', (e) => {
+                if (isDragging) return;
+                const x = (e.clientX - window.innerWidth / 2) / 10;
+                const y = (e.clientY - window.innerHeight / 2) / 10;
+                moveItems(x, y);
+            });
+
+            fetch(scriptUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar la hoja de cálculo. Verifica la URL y los permisos.');
+                    }
+                    return response.json();
+                })
+                .then(poems => {
+                    poemsData = poems;
+                    if (!poemsData || poemsData.length === 0) {
+                        loader.textContent = 'No se encontraron poemas para mostrar.';
+                        return;
+                    }
+                    
+                    loader.style.display = 'none';
+                    if (poemCountEl) {
+                        poemCountEl.textContent = poemsData.length;
+                    }
+
+                    poemsData.forEach((poem, index) => {
+                        const randomImage = getRandomImageData();
+                        const buttonBgColor = darkenColor(randomImage.color, 20); 
+
+                        const cardHTML = `
+                            <div class="card-container absolute w-[240px] h-[360px] sm:w-[280px] sm:h-[420px] cursor-pointer" 
+                                 style="will-change: transform;" 
+                                 data-color="${randomImage.color}" 
+                                 data-image-url="${randomImage.url}"
+                                 data-poem-index="${index + 1}">
+                                <div class="card relative w-full h-full transition-transform duration-700 rounded-lg shadow-2xl">
+                                    <div class="card-face card-front absolute w-full h-full rounded-lg overflow-hidden bg-[#f4eadd] flex flex-col justify-center items-center p-5 gap-5">
+                                        <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${randomImage.url})"></div>
+                                        <div class="text-center text-[#234489]">
+                                            <div style="font-family: 'Alexandria', sans-serif;">
+                                                <h1 class="text-3xl sm:text-4xl leading-tight">
+                                                    <span style="font-weight: 700;">El Closet</span><br>
+                                                    <span style="font-weight: 300;">Expandido</span>
+                                                </h1>
+                                            </div>
+                                            <h2 class="font-['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Haz clic para leer</h2>
+                                        </div>
+                                    </div>
+                                    <div class="card-face card-back relative w-full h-full rounded-lg overflow-hidden text-[#234489] flex flex-col" 
+                                         style="transform: rotateY(180deg); background-color: ${randomImage.color};">
+                                        <div class="close-btn" title="Cerrar">&times;</div>
+                                        <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto" style="white-space: pre-wrap;">${poem}</div>
+                                        <div class="mt-auto p-4 border-t border-white/50 flex justify-center items-center">
+                                            <button class="download-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" 
+                                                    style="background-color: ${buttonBgColor};">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                                                <span>Descargar Poema</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        cardStage.insertAdjacentHTML('beforeend', cardHTML);
+                    });
+                    
+                    document.querySelectorAll('.card-container').forEach(cardContainer => {
+                        cardContainer.addEventListener('click', (e) => {
+                            if (e.target.closest('.close-btn') || e.target.closest('.download-btn')) {
+                                return;
+                            }
+
+                            if (!cardContainer.classList.contains('flipped')) {
+                                topZ++;
+                                cardContainer.style.zIndex = topZ;
+                                cardContainer.classList.add('flipped');
+                                const cardRect = cardContainer.getBoundingClientRect();
+                                const viewportCenterX = window.innerWidth / 2;
+                                const viewportCenterY = window.innerHeight / 2;
+                                const translateX = (viewportCenterX - (cardRect.left + cardRect.width / 2)) / stageScale;
+                                const translateY = (viewportCenterY - (cardRect.top + cardRect.height / 2)) / stageScale;
+                                cardContainer.style.transform = `translate(${translateX}px, ${translateY}px)`;
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('.close-btn').forEach(closeBtn => {
+                        closeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation(); 
+                            const cardContainer = closeBtn.closest('.card-container');
+                            if (cardContainer) {
+                                cardContainer.classList.remove('flipped');
+                                bottomZ--;
+                                cardContainer.style.zIndex = bottomZ;
+                                cardContainer.style.transform = cardContainer.dataset.initialTransform;
+                            }
+                        });
+                    });
+                    
+                    document.querySelectorAll('.download-btn').forEach(downloadBtn => {
+                        downloadBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const cardContainer = downloadBtn.closest('.card-container');
+                            const poemText = cardContainer.querySelector('.poem-content').textContent;
+                            const poemIndex = cardContainer.dataset.poemIndex;
+                            handleDownload(poemText, poemIndex, poemsData.length);
+                        });
+                    });
+
+                    initFloatingCards();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loader.textContent = 'No se pudieron cargar los poemas. Inténtalo de nuevo más tarde.';
+                });
+        });
+    </script>
+
+</body>
+</html>
