@@ -63,6 +63,16 @@
             </button>
         </div>
     </div>
+    
+    <!-- MEJORA: Pop-up de advertencia para móviles -->
+    <div id="mobile-warning-popup" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" style="display: none;">
+        <div class="receipt-box relative flex flex-col space-y-4 text-center">
+            <h2 class="text-2xl font-bold">Experiencia de Escritorio</h2>
+            <p class="text-sm leading-relaxed my-4">
+                Este sitio está diseñado para una experiencia de escritorio. Por favor, visítanos desde un computador para explorar los poemas.
+            </p>
+        </div>
+    </div>
 
 
     <script>
@@ -72,71 +82,30 @@
             styleSheet.innerText = minifiedCss;
             document.head.appendChild(styleSheet);
 
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbyaxXxk1nyvKgXI-5UGtyEznN4OoSs02TIMq1aLB-cHfqQdG8GbhhlilJCH_U-VVw4YRg/exec';
-            const cardStage = document.getElementById('card-stage');
-            const loader = document.getElementById('loader');
-            const welcomePopup = document.getElementById('welcome-popup');
-            const popupOverlay = document.getElementById('popup-overlay');
-            const exploreBtn = document.getElementById('explore-btn');
-            const poemCountEl = document.getElementById('poem-count-receipt');
-            const receiptDateEl = document.getElementById('receipt-date');
-
-            receiptDateEl.textContent = new Date().toLocaleDateString('es-ES');
-
-            let topZ = 10;
-            let poemsData = []; 
-            let dragState = { isDragging: false, startX: 0, startY: 0, stageTranslateX: 0, stageTranslateY: 0, stageScale: 1, initialPinchDistance: 0 };
-
-            const imageUrls = [
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaxXxk1nyvKgXI-5UGtyEznN4OoSs02TIMq1aLB-cHfqQdG8GbhhlilJCH_U-VVw4YRg/exec';
+            const IMAGE_URLS = [
                 'https://www.jaimesiva.com/wp-content/uploads/2025/08/rojo.png',
                 'https://www.jaimesiva.com/wp-content/uploads/2025/08/naranja.png',
                 'https://www.jaimesiva.com/wp-content/uploads/2025/08/azul.png',
                 'https://www.jaimesiva.com/wp-content/uploads/2025/08/violeta.png'
             ];
 
-            const getRandomImageUrl = () => imageUrls[Math.floor(Math.random() * imageUrls.length)];
-
-            const closePopup = () => welcomePopup.classList.add('hidden');
-
-            // --- FIX: Re-introduced initFloatingCards function ---
-            const initFloatingCards = () => {
-                const cards = document.querySelectorAll('.card-container');
-                cards.forEach(card => {
-                    const depth = Math.random() * 0.6 + 0.2;
-                    const spreadFactor = 2.2; 
-                    const virtualWidth = cardStage.clientWidth * spreadFactor;
-                    const virtualHeight = cardStage.clientHeight * spreadFactor;
-                    const offsetX = (virtualWidth - cardStage.clientWidth) / 2;
-                    const offsetY = (virtualHeight - cardStage.clientHeight) / 2;
-                    const randomTop = (Math.random() * virtualHeight) - offsetY;
-                    const randomLeft = (Math.random() * virtualWidth) - offsetX;
-                    const randomRotate = (Math.random() - 0.5) * 40;
-                    const initialTransform = `rotate(${randomRotate}deg)`;
-
-                    card.style.top = `${randomTop}px`;
-                    card.style.left = `${randomLeft}px`;
-                    card.style.transform = initialTransform;
-                    card.style.zIndex = Math.floor(Math.random() * 5) + 2;
-                    
-                    card.dataset.depth = depth;
-                    card.dataset.rotate = randomRotate;
-                    card.dataset.initialTransform = initialTransform;
-                });
-            };
+            const cardStage = document.getElementById('card-stage');
+            const loader = document.getElementById('loader');
+            const welcomePopup = document.getElementById('welcome-popup');
             
-            // --- FIX: Re-introduced moveItems function ---
-            const moveItems = (x, y) => {
-                const cards = document.querySelectorAll('.card-container');
-                cards.forEach(card => {
-                    if (card.classList.contains('flipped')) return;
-                    
-                    const depth = card.dataset.depth;
-                    const initialRotate = parseFloat(card.dataset.rotate);
-                    const moveX = (x * depth);
-                    const moveY = (y * depth);
-                    card.style.transform = `translateX(${moveX}px) translateY(${moveY}px) rotate(${initialRotate}deg)`;
-                });
-            };
+            let topZ = 10;
+            let poemsData = []; 
+            let dragState = { isDragging: false, startX: 0, startY: 0, stageTranslateX: 0, stageTranslateY: 0, stageScale: 1, initialPinchDistance: 0 };
+
+            // --- MEJORA: Función para detectar dispositivos móviles ---
+            function isMobileDevice() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+
+            const getRandomImageUrl = () => IMAGE_URLS[Math.floor(Math.random() * IMAGE_URLS.length)];
+            
+            const closePopup = () => welcomePopup.classList.add('hidden');
 
             const handleDownload = (poemText, poemIndex, totalPoems) => {
                 const tempContainer = document.createElement('div');
@@ -189,119 +158,181 @@
                 });
             };
 
-            const updateStageTransform = () => {
-                cardStage.style.transform = `translate(${dragState.stageTranslateX}px, ${dragState.stageTranslateY}px) scale(${dragState.stageScale})`;
-            };
-
-            const startDrag = (e) => {
-                if (e.target.closest('.card-container')) return;
-                e.preventDefault();
-                
-                if (e.touches && e.touches.length === 2) {
-                    dragState.initialPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                } else {
-                    dragState.isDragging = true;
-                    dragState.startX = e.clientX || e.touches[0].clientX;
-                    dragState.startY = e.clientY || e.touches[0].clientY;
-                    cardStage.style.transition = 'none';
-                }
-            };
-
-            const drag = (e) => {
-                e.preventDefault();
-                if (e.touches && e.touches.length === 2 && dragState.initialPinchDistance > 0) {
-                    const newPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                    const scaleRatio = newPinchDistance / dragState.initialPinchDistance;
-                    dragState.stageScale = Math.min(Math.max(dragState.stageScale * scaleRatio, 0.3), 2);
-                    dragState.initialPinchDistance = newPinchDistance;
-                } else if (dragState.isDragging) {
-                    const currentX = e.clientX || e.touches[0].clientX;
-                    const currentY = e.clientY || e.touches[0].clientY;
-                    const dx = currentX - dragState.startX;
-                    const dy = currentY - dragState.startY;
-                    dragState.stageTranslateX += dx;
-                    dragState.stageTranslateY += dy;
-                    dragState.startX = currentX;
-                    dragState.startY = currentY;
-                }
-                updateStageTransform();
-            };
-
-            const endDrag = () => {
-                dragState.isDragging = false;
-                dragState.initialPinchDistance = 0;
-                cardStage.style.transition = 'transform 0.2s ease-out';
-            };
-            
-            popupOverlay.addEventListener('click', closePopup);
-            exploreBtn.addEventListener('click', closePopup);
-            cardStage.addEventListener('mousedown', startDrag);
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', endDrag);
-            document.addEventListener('mouseleave', endDrag);
-            cardStage.addEventListener('touchstart', startDrag, { passive: true });
-            document.addEventListener('touchmove', drag, { passive: false });
-            document.addEventListener('touchend', endDrag);
-            document.body.addEventListener('wheel', (e) => {
-                if (e.target.closest('.card-back')) return;
-                e.preventDefault();
-                dragState.stageScale = Math.min(Math.max(dragState.stageScale + (e.deltaY < 0 ? 0.1 : -0.1), 0.3), 2);
-                updateStageTransform();
-            }, { passive: false });
-            document.body.addEventListener('mousemove', (e) => {
-                if (dragState.isDragging) return;
-                requestAnimationFrame(() => {
-                    moveItems((e.clientX - window.innerWidth / 2) / 10, (e.clientY - window.innerHeight / 2) / 10);
+            function renderCards(poems) {
+                const fragment = document.createDocumentFragment();
+                poems.forEach((poem, index) => {
+                    const randomImageUrl = getRandomImageUrl();
+                    const cardContainer = document.createElement('div');
+                    cardContainer.className = "card-container absolute w-[240px] h-[360px] sm:w-[280px] sm:h-[420px] cursor-pointer";
+                    cardContainer.style.willChange = 'transform';
+                    cardContainer.dataset.poemIndex = index + 1;
+                    cardContainer.innerHTML = `
+                        <div class="card relative w-full h-full transition-transform duration-700 rounded-lg shadow-2xl">
+                            <div class="card-face card-front absolute w-full h-full rounded-lg overflow-hidden bg-[#f4eadd] flex flex-col justify-center items-center p-5 gap-5">
+                                <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${randomImageUrl})"></div>
+                                <div class="text-center text-[#234489]">
+                                    <div style="font-family: 'Alexandria', sans-serif;"><h1 class="text-3xl sm:text-4xl leading-tight"><span style="font-weight: 700;">El Closet</span><br><span style="font-weight: 300;">Expandido</span></h1></div>
+                                    <h2 class="font-['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Haz clic para leer</h2>
+                                </div>
+                            </div>
+                            <div class="card-face card-back relative w-full h-full rounded-lg overflow-hidden text-[#234489] flex flex-col" style="transform: rotateY(180deg); background-color: #fdfaf4;">
+                                <div class="close-btn" title="Cerrar">&times;</div>
+                                <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto" style="white-space: pre-wrap;">${poem}</div>
+                                <div class="mt-auto p-4 border-t border-gray-200 flex justify-center items-center">
+                                    <button class="download-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                                        <span>Descargar Poema</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    fragment.appendChild(cardContainer);
                 });
-            });
-
-            function createCardElement(poem, index) {
-                const randomImageUrl = getRandomImageUrl();
-                const cardContainer = document.createElement('div');
-                cardContainer.className = "card-container absolute w-[240px] h-[360px] sm:w-[280px] sm:h-[420px] cursor-pointer";
-                cardContainer.style.willChange = 'transform';
-                cardContainer.dataset.poemIndex = index + 1;
-                cardContainer.innerHTML = `
-                    <div class="card relative w-full h-full transition-transform duration-700 rounded-lg shadow-2xl">
-                        <div class="card-face card-front absolute w-full h-full rounded-lg overflow-hidden bg-[#f4eadd] flex flex-col justify-center items-center p-5 gap-5">
-                            <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${randomImageUrl})"></div>
-                            <div class="text-center text-[#234489]">
-                                <div style="font-family: 'Alexandria', sans-serif;"><h1 class="text-3xl sm:text-4xl leading-tight"><span style="font-weight: 700;">El Closet</span><br><span style="font-weight: 300;">Expandido</span></h1></div>
-                                <h2 class="font-['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Haz clic para leer</h2>
-                            </div>
-                        </div>
-                        <div class="card-face card-back relative w-full h-full rounded-lg overflow-hidden text-[#234489] flex flex-col" style="transform: rotateY(180deg); background-color: #fdfaf4;">
-                            <div class="close-btn" title="Cerrar">&times;</div>
-                            <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto" style="white-space: pre-wrap;">${poem}</div>
-                            <div class="mt-auto p-4 border-t border-gray-200 flex justify-center items-center">
-                                <button class="download-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
-                                    <span>Descargar Poema</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>`;
-                return cardContainer;
+                cardStage.appendChild(fragment);
             }
 
-            function createCardsIncrementally(poems) {
-                let index = 0;
-                function addNextCard() {
-                    if (index >= poems.length) {
-                        initFloatingCards();
+            function initFloatingCards() {
+                const cards = document.querySelectorAll('.card-container');
+                cards.forEach(card => {
+                    const depth = Math.random() * 0.6 + 0.2;
+                    const spreadFactor = 2.2; 
+                    const virtualWidth = cardStage.clientWidth * spreadFactor;
+                    const virtualHeight = cardStage.clientHeight * spreadFactor;
+                    const offsetX = (virtualWidth - cardStage.clientWidth) / 2;
+                    const offsetY = (virtualHeight - cardStage.clientHeight) / 2;
+                    const randomTop = (Math.random() * virtualHeight) - offsetY;
+                    const randomLeft = (Math.random() * virtualWidth) - offsetX;
+                    const randomRotate = (Math.random() - 0.5) * 40;
+                    const initialTransform = `rotate(${randomRotate}deg)`;
+
+                    card.style.top = `${randomTop}px`;
+                    card.style.left = `${randomLeft}px`;
+                    card.style.transform = initialTransform;
+                    card.style.zIndex = Math.floor(Math.random() * 5) + 2;
+                    
+                    card.dataset.depth = depth;
+                    card.dataset.rotate = randomRotate;
+                    card.dataset.initialTransform = initialTransform;
+                });
+            }
+
+            function moveItems(x, y) {
+                const cards = document.querySelectorAll('.card-container');
+                cards.forEach(card => {
+                    if (card.classList.contains('flipped')) return;
+                    const depth = card.dataset.depth;
+                    const initialRotate = parseFloat(card.dataset.rotate);
+                    const moveX = (x * depth);
+                    const moveY = (y * depth);
+                    card.style.transform = `translateX(${moveX}px) translateY(${moveY}px) rotate(${initialRotate}deg)`;
+                });
+            }
+
+            function setupEventListeners() {
+                document.getElementById('popup-overlay').addEventListener('click', closePopup);
+                document.getElementById('explore-btn').addEventListener('click', closePopup);
+
+                cardStage.addEventListener('click', (e) => {
+                    const cardContainer = e.target.closest('.card-container');
+                    if (!cardContainer) return;
+
+                    if (e.target.closest('.close-btn')) {
+                        cardContainer.classList.remove('flipped');
+                        cardContainer.style.zIndex = 1;
+                        cardContainer.style.transform = cardContainer.dataset.initialTransform;
                         return;
                     }
-                    const cardElement = createCardElement(poems[index], index);
-                    cardStage.appendChild(cardElement);
-                    index++;
-                    requestAnimationFrame(addNextCard);
-                }
-                addNextCard();
+
+                    if (e.target.closest('.download-btn')) {
+                        const poemIndex = cardContainer.dataset.poemIndex;
+                        const poemText = poemsData[poemIndex - 1];
+                        handleDownload(poemText, poemIndex, poemsData.length);
+                        return;
+                    }
+
+                    if (!cardContainer.classList.contains('flipped')) {
+                        topZ++;
+                        cardContainer.style.zIndex = topZ;
+                        cardContainer.classList.add('flipped');
+                        const cardRect = cardContainer.getBoundingClientRect();
+                        const viewportCenterX = window.innerWidth / 2;
+                        const viewportCenterY = window.innerHeight / 2;
+                        const translateX = (viewportCenterX - (cardRect.left + cardRect.width / 2)) / dragState.stageScale;
+                        const translateY = (viewportCenterY - (cardRect.top + cardRect.height / 2)) / dragState.stageScale;
+                        cardContainer.style.transform = `translate(${translateX}px, ${translateY}px)`;
+                    }
+                });
+
+                const updateStageTransform = () => {
+                    cardStage.style.transform = `translate(${dragState.stageTranslateX}px, ${dragState.stageTranslateY}px) scale(${dragState.stageScale})`;
+                };
+                const startDrag = (e) => {
+                    if (e.target.closest('.card-container')) return;
+                    e.preventDefault();
+                    if (e.touches && e.touches.length === 2) {
+                        dragState.initialPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    } else {
+                        dragState.isDragging = true;
+                        dragState.startX = e.clientX || e.touches[0].clientX;
+                        dragState.startY = e.clientY || e.touches[0].clientY;
+                        cardStage.style.transition = 'none';
+                    }
+                };
+                const drag = (e) => {
+                    if (dragState.isDragging || (e.touches && e.touches.length === 2)) e.preventDefault();
+                    if (e.touches && e.touches.length === 2 && dragState.initialPinchDistance > 0) {
+                        const newPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                        const scaleRatio = newPinchDistance / dragState.initialPinchDistance;
+                        dragState.stageScale = Math.min(Math.max(dragState.stageScale * scaleRatio, 0.3), 2);
+                        dragState.initialPinchDistance = newPinchDistance;
+                    } else if (dragState.isDragging) {
+                        const currentX = e.clientX || e.touches[0].clientX;
+                        const currentY = e.clientY || e.touches[0].clientY;
+                        dragState.stageTranslateX += currentX - dragState.startX;
+                        dragState.stageTranslateY += currentY - dragState.startY;
+                        dragState.startX = currentX;
+                        dragState.startY = currentY;
+                    }
+                    updateStageTransform();
+                };
+                const endDrag = () => {
+                    dragState.isDragging = false;
+                    dragState.initialPinchDistance = 0;
+                    cardStage.style.transition = 'transform 0.2s ease-out';
+                };
+                cardStage.addEventListener('mousedown', startDrag);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', endDrag);
+                document.addEventListener('mouseleave', endDrag);
+                cardStage.addEventListener('touchstart', startDrag, { passive: true });
+                document.addEventListener('touchmove', drag, { passive: false });
+                document.addEventListener('touchend', endDrag);
+                document.body.addEventListener('wheel', (e) => {
+                    if (e.target.closest('.card-back')) return;
+                    e.preventDefault();
+                    dragState.stageScale = Math.min(Math.max(dragState.stageScale + (e.deltaY < 0 ? 0.1 : -0.1), 0.3), 2);
+                    updateStageTransform();
+                }, { passive: false });
+                document.body.addEventListener('mousemove', (e) => {
+                    if (dragState.isDragging) return;
+                    requestAnimationFrame(() => {
+                        moveItems((e.clientX - window.innerWidth / 2) / 10, (e.clientY - window.innerHeight / 2) / 10);
+                    });
+                });
             }
 
-            async function main() {
+            // --- FUNCIÓN PRINCIPAL DE INICIALIZACIÓN ---
+            async function initializeApp() {
+                // --- MEJORA: Lógica de detección de móvil ---
+                if (isMobileDevice()) {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('welcome-popup').style.display = 'none';
+                    document.getElementById('mobile-warning-popup').style.display = 'flex';
+                    return; // Detiene la ejecución para móviles
+                }
+
                 try {
-                    const response = await fetch(scriptUrl);
+                    const response = await fetch(SCRIPT_URL);
                     if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
                     poemsData = await response.json();
 
@@ -310,49 +341,21 @@
                         return;
                     }
                     
+                    document.getElementById('receipt-date').textContent = new Date().toLocaleDateString('es-ES');
+                    document.getElementById('poem-count-receipt').textContent = poemsData.length;
                     loader.style.display = 'none';
-                    poemCountEl.textContent = poemsData.length;
 
-                    createCardsIncrementally(poemsData);
-
-                    cardStage.addEventListener('click', (e) => {
-                        const cardContainer = e.target.closest('.card-container');
-                        if (!cardContainer) return;
-
-                        if (e.target.closest('.close-btn')) {
-                            cardContainer.classList.remove('flipped');
-                            cardContainer.style.zIndex = 1;
-                            cardContainer.style.transform = cardContainer.dataset.initialTransform;
-                            return;
-                        }
-
-                        if (e.target.closest('.download-btn')) {
-                            const poemIndex = cardContainer.dataset.poemIndex;
-                            const poemText = poemsData[poemIndex - 1];
-                            handleDownload(poemText, poemIndex, poemsData.length);
-                            return;
-                        }
-
-                        if (!cardContainer.classList.contains('flipped')) {
-                            topZ++;
-                            cardContainer.style.zIndex = topZ;
-                            cardContainer.classList.add('flipped');
-                            const cardRect = cardContainer.getBoundingClientRect();
-                            const viewportCenterX = window.innerWidth / 2;
-                            const viewportCenterY = window.innerHeight / 2;
-                            const translateX = (viewportCenterX - (cardRect.left + cardRect.width / 2)) / dragState.stageScale;
-                            const translateY = (viewportCenterY - (cardRect.top + cardRect.height / 2)) / dragState.stageScale;
-                            cardContainer.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                        }
-                    });
+                    renderCards(poemsData);
+                    initFloatingCards();
+                    setupEventListeners();
 
                 } catch (error) {
-                    console.error('Error al cargar los poemas:', error);
+                    console.error('Fallo la inicialización de la aplicación:', error);
                     loader.textContent = 'Error al cargar. Intenta de nuevo.';
                 }
             }
 
-            main();
+            initializeApp();
         });
     </script>
 
