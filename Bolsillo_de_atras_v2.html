@@ -67,7 +67,6 @@
             cursor: pointer;
         }
         
-        /* SOLUCIÓN: Simplificación radical para móvil. Solo existe la cara frontal. */
         .card-back { display: none; }
         .card-front { display: flex; }
 
@@ -184,7 +183,7 @@
                 }
             };
 
-            const handleShareOrDownload = async (poemText, poemIndex, totalPoems) => {
+            const handleDownload = async (poemText, poemIndex, totalPoems) => {
                 const tempContainer = document.createElement('div');
                 tempContainer.style.cssText = `position: absolute; left: -9999px; width: 1080px; height: 1920px; background-color: #fdfaf4; font-family: 'Alexandria', sans-serif; color: #234489; display: flex; justify-content: center; align-items: center;`;
                 tempContainer.innerHTML = `<div style="width: 100%; height: 100%; padding: 80px 60px; display: flex; flex-direction: column; box-sizing: border-box;"><div style="text-align: center;"><h1 style="font-size: 80px; line-height: 1;"><span style="font-weight: 700;">El Closet</span><br><span style="font-weight: 300;">Expandido</span></h1><p style="font-size: 24px; opacity: 0.7; margin-top: 10px;">Bolsillo de Atrás</p></div><hr style="border-top: 2px dashed #234489; opacity: 0.4; margin: 40px 0; width: 100%;"><div style="font-size: 28px; display: flex; flex-direction: column; gap: 10px;"><div style="display: flex; justify-content: space-between;"><span>FECHA:</span><span>${new Date().toLocaleDateString('es-ES')}</span></div><div style="display: flex; justify-content: space-between;"><span>POEMA:</span><span>${poemIndex} / ${totalPoems}</span></div></div><hr style="border-top: 2px dashed #234489; opacity: 0.4; margin: 40px 0; width: 100%;"><div class="poem-ticket-content" style="flex-grow: 1; font-family: 'Poppins', sans-serif; line-height: 1.6; text-align: left; white-space: pre-wrap; overflow: hidden; color: #234489;">${poemText.trim()}</div><div style="margin-top: auto; text-align: center; padding-top: 40px; font-family: 'Poppins', sans-serif; font-size: 24px; color: #234489; opacity: 0.7; line-height: 1.4;"><p>Este poema es una obra generativa desarrollada por el laboratorio de creación intermedial "El Clóset Expandido", liderado por el profesor Jaime Vallejo. Forma parte del proyecto de investigación "Circuito Cuerpo Espacio" de la Facultad de Artes de la Universidad Antonio Nariño.</p></div></div>`;
@@ -200,20 +199,12 @@
 
                 try {
                     const canvas = await html2canvas(tempContainer, { scale: 1, useCORS: true });
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                    const file = new File([blob], 'poema.png', { type: 'image/png' });
-
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({ files: [file], title: 'Un Poema Revelado', text: 'Descubre un poema de El Closet Expandido.' });
-                    } else {
-                        const link = document.createElement('a');
-                        link.download = 'poema.png';
-                        link.href = URL.createObjectURL(blob);
-                        link.click();
-                        URL.revokeObjectURL(link.href);
-                    }
+                    const link = document.createElement('a');
+                    link.download = 'poema-revelado.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
                 } catch (err) {
-                    console.error("Error al compartir o descargar:", err);
+                    console.error("Error al descargar:", err);
                 } finally {
                     document.body.removeChild(tempContainer);
                 }
@@ -231,7 +222,6 @@
                             <div class="card-face card-front flex flex-col justify-center items-center p-5 gap-5 rounded-lg overflow-hidden bg-[#f4eadd] shadow-lg h-full">
                                 <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${getRandomImageUrl()})"></div>
                                 <div class="text-center text-[#234489]">
-                                    <!-- CORRECCIÓN: Usar clases de Tailwind en lugar de estilos en línea -->
                                     <div style="font-family: 'Alexandria', sans-serif;"><h1 class="text-3xl sm:text-4xl leading-tight"><span class="font-bold">El Closet</span><br><span class="font-light">Expandido</span></h1></div>
                                     <h2 class="font['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Toca para leer</h2>
                                 </div>
@@ -247,13 +237,13 @@
                 modalContent.id = 'modal-content';
                 modalContent.className = 'relative w-[280px] h-[420px]';
                 modalContent.innerHTML = `
-                    <div class="card-face card-back flex flex-col rounded-lg text-[#234489] w-full h-full" style="background-color: #fdfaf4;">
+                    <div class="card-face card-back flex flex-col rounded-lg text-[#234489] w-full h-full" style="background-color: #fdfaf4; display: flex;">
                         <div class="close-btn" title="Cerrar">&times;</div>
                         <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto">${poem}</div>
                         <div class="mt-auto p-4 border-t border-gray-200 flex justify-center items-center">
-                            <button class="share-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
-                                <span>Compartir Poema</span>
+                            <button class="download-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                                <span>Descargar Poema</span>
                             </button>
                         </div>
                     </div>`;
@@ -279,8 +269,8 @@
                             poemModal.classList.add('hidden');
                             poemModal.removeEventListener('click', modalClickListener);
                         }
-                        if (modalEvent.target.closest('.share-btn')) {
-                            handleShareOrDownload(poemData, poemIndex, poemsData.length);
+                        if (modalEvent.target.closest('.download-btn')) {
+                            handleDownload(poemData, poemIndex, poemsData.length);
                         }
                     };
                     poemModal.addEventListener('click', modalClickListener);
@@ -311,8 +301,8 @@
                     card.dataset.rotate = randomRotate;
 
                     card.addEventListener('click', (e) => {
-                        if (e.target.closest('.share-btn')) {
-                            handleShareOrDownload(card.dataset.poemText, card.dataset.poemIndex, poemsData.length);
+                        if (e.target.closest('.download-btn')) {
+                            handleDownload(card.dataset.poemText, card.dataset.poemIndex, poemsData.length);
                             return;
                         }
                         if (e.target.closest('.close-btn')) {
@@ -371,7 +361,6 @@
                             <div class="card-face card-front flex flex-col justify-center items-center p-5 gap-5 rounded-lg overflow-hidden bg-[#f4eadd] shadow-lg">
                                 <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-cover bg-center border-4 border-white/50 shadow-lg" style="background-image: url(${getRandomImageUrl()})"></div>
                                 <div class="text-center text-[#234489]">
-                                    <!-- CORRECCIÓN: Usar clases de Tailwind en lugar de estilos en línea -->
                                     <div style="font-family: 'Alexandria', sans-serif;"><h1 class="text-3xl sm:text-4xl leading-tight"><span class="font-bold">El Closet</span><br><span class="font-light">Expandido</span></h1></div>
                                     <h2 class="font['Caveat',_cursive] text-2xl sm:text-3xl mt-2">Toca para leer</h2>
                                 </div>
@@ -380,9 +369,9 @@
                                 <div class="close-btn" title="Cerrar">&times;</div>
                                 <div class="poem-content p-12 pt-16 text-left text-sm leading-7 overflow-y-auto">${poem}</div>
                                 <div class="mt-auto p-4 border-t border-gray-200 flex justify-center items-center">
-                                    <button class="share-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
-                                        <span>Compartir Poema</span>
+                                    <button class="download-btn flex items-center gap-2 py-2 px-5 rounded-lg text-white font-semibold transition-transform hover:scale-105" style="background-color: #234489;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                                        <span>Descargar Poema</span>
                                     </button>
                                 </div>
                             </div>
