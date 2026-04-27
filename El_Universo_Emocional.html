@@ -6,17 +6,17 @@
     <title>Universo Emocional — El Closet Expandido</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #1a120d;
-            --bg-color: #2b2019;
-            --card-bg: #F1EDFF;
-            --accent: #a48976;
+            --bg-deep: #000000;
+            --bg-color: #000000;
+            --card-bg: #ffffff;
+            --accent: #ffffff;
             --text-light: #fdfaf4;
-            --text-muted: #b8a99a;
-            --panel-bg: rgba(43, 32, 25, 0.92);
-            --border-glow: rgba(164, 137, 118, 0.3);
+            --text-muted: #aaaaaa;
+            --panel-bg: rgba(0, 0, 0, 0.6);
+            --border-glow: rgba(255, 255, 255, 0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,6 +35,36 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
+            cursor: grab;
+        }
+
+        /* ─── BOTÓN VOLVER (X) ─── */
+        .exit-button {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            width: 22px;
+            height: 22px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            cursor: pointer;
+            z-index: 80;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+        }
+
+        .exit-button:hover {
+            background: white;
+            color: black;
+            transform: scale(1.1);
         }
 
         /* ─── HEADER ─── */
@@ -42,22 +72,23 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 100;
-            padding: 20px 30px;
+            padding: 20px 30px 20px 65px;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             pointer-events: none;
-            background: linear-gradient(to bottom, rgba(26,18,13,0.9) 0%, transparent 100%);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
         }
 
         .header > * { pointer-events: auto; }
 
         .logo-area h1 {
-            font-family: 'Caveat', cursive;
+            font-family: 'Montserrat', sans-serif;
             font-size: 2rem;
-            font-weight: 700;
+            font-weight: 500;
+            text-transform: uppercase;
             letter-spacing: 1px;
-            background: linear-gradient(135deg, #F1EDFF, #a48976);
+            background: linear-gradient(135deg, #ffffff, #aaaaaa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -81,9 +112,9 @@
 
         .stat-item .num {
             font-size: 1.6rem;
-            font-weight: 700;
+            font-weight: 500;
             color: var(--accent);
-            font-family: 'Caveat', cursive;
+            font-family: 'Montserrat', sans-serif;
         }
 
         .stat-item .label {
@@ -109,12 +140,11 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
         }
         .panel-toggle:hover { background: var(--accent); color: var(--bg-deep); }
         
-        #sidebarToggle { bottom: 20px; left: 20px; }
-        #configToggle { top: 80px; right: 30px; }
+        #sidebarToggle { top: 95px; left: 25px; }
 
         .close-panel-btn {
             position: absolute;
@@ -148,8 +178,10 @@
         .config-panel.active { display: block; }
 
         .config-panel h3 {
-            font-family: 'Caveat', cursive;
+            font-family: 'Montserrat', sans-serif;
             font-size: 1.3rem;
+            font-weight: 500;
+            text-transform: uppercase;
             margin-bottom: 12px;
             color: var(--accent);
         }
@@ -164,7 +196,7 @@
         .config-panel input {
             width: 100%;
             padding: 10px 14px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.05);
             border: 1px solid var(--border-glow);
             border-radius: 10px;
             color: var(--text-light);
@@ -176,8 +208,8 @@
         .config-panel .btn-connect {
             width: 100%;
             padding: 10px;
-            background: linear-gradient(135deg, #a48976, #7a6252);
-            border: none;
+            background: linear-gradient(135deg, #333333, #000000);
+            border: 1px solid var(--border-glow);
             border-radius: 10px;
             color: var(--text-light);
             font-weight: 600;
@@ -188,20 +220,11 @@
         }
         .config-panel .btn-connect:hover { opacity: 0.85; }
 
-        .config-panel .status {
-            font-size: 0.7rem;
-            margin-top: 10px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            display: none;
-        }
-        .config-panel .status.success { display: block; background: rgba(76,175,80,0.15); color: #81c784; }
-        .config-panel .status.error { display: block; background: rgba(244,67,54,0.15); color: #e57373; }
-
-        /* ─── ENHANCED SIDEBAR WITH FILTERS ─── */
+        /* ─── ENHANCED SIDEBAR WITH FILTERS (LEFT SIDE) ─── */
         .sidebar {
             position: fixed;
             left: 0;
+            right: auto;
             top: 50%;
             transform: translateX(-120%) translateY(-50%);
             z-index: 100;
@@ -213,7 +236,7 @@
             border-radius: 0 16px 16px 0;
             border: 1px solid var(--border-glow);
             border-left: none;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
             max-height: 85vh;
             width: 280px;
             overflow-y: auto;
@@ -252,8 +275,8 @@
         .chip {
             padding: 4px 10px;
             border-radius: 12px;
-            border: 1px solid rgba(164, 137, 118, 0.3);
-            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-muted);
             font-size: 0.65rem;
             cursor: pointer;
@@ -266,7 +289,7 @@
         }
 
         .chip.active {
-            background: rgba(164, 137, 118, 0.25);
+            background: rgba(255, 255, 255, 0.2);
             border-color: var(--accent);
             color: var(--text-light);
         }
@@ -278,7 +301,7 @@
         }
 
         .emotion-list-container {
-            border-top: 1px solid rgba(164, 137, 118, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             padding-top: 16px;
             display: flex;
             flex-direction: column;
@@ -303,7 +326,7 @@
         .emotion-btn:hover, .emotion-btn.active {
             border-color: var(--border-glow);
             color: var(--text-light);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.08);
         }
 
         .emotion-dot {
@@ -315,74 +338,133 @@
 
         .emotion-count {
             margin-left: auto;
-            font-family: 'Caveat', cursive;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
             font-size: 0.9rem;
             opacity: 0.6;
         }
 
-        /* ─── INSIGHT PANEL ─── */
+        /* ─── INSIGHT PANEL (RIGHT SIDE) ─── */
         .insight-panel {
             position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%) translateY(100%);
+            top: 50%;
+            right: 0;
+            transform: translateX(120%) translateY(-50%);
             z-index: 100;
-            width: 90%;
-            max-width: 900px;
-            max-height: 55vh;
+            width: 360px;
+            max-width: 90vw;
+            height: 85vh;
             overflow-y: auto;
             background: var(--panel-bg);
             border: 1px solid var(--border-glow);
-            border-bottom: none;
-            border-radius: 20px 20px 0 0;
-            padding: 28px 36px;
+            border-right: none;
+            border-radius: 16px 0 0 16px;
+            padding: 30px 24px 80px 24px;
             backdrop-filter: blur(25px);
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) transparent;
         }
 
-        .insight-panel.visible { transform: translateX(-50%) translateY(0); }
+        .insight-panel::-webkit-scrollbar { width: 4px; }
+        .insight-panel::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+        .insight-panel.visible { transform: translateX(0) translateY(-50%); }
 
         .insight-panel .close-panel-btn {
-            top: 20px;
-            right: 24px;
+            top: 16px;
+            right: 16px;
         }
 
         .insight-header {
             display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            margin-bottom: 24px;
         }
 
         .insight-planet-dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            box-shadow: 0 0 20px var(--glow, rgba(164,137,118,0.5));
+            display: none;
         }
 
         .insight-header h2 {
-            font-family: 'Caveat', cursive;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
             font-size: 1.8rem;
+            margin: 0;
+            line-height: 1.1;
         }
 
         .insight-header .frequency {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            margin-left: auto;
+            margin-left: 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
+        /* ─── INSIGHT NAV (BOTTOM FIXED) ─── */
+        .insight-nav-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--panel-bg);
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid var(--border-glow);
+            backdrop-filter: blur(10px);
+            z-index: 105;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .insight-nav-container.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            color: var(--text-light);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: var(--bg-deep);
+            border-color: var(--accent);
+        }
+
+        /* ─── INSIGHT GRID ─── */
         .insight-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            display: flex;
+            flex-direction: column;
             gap: 16px;
         }
 
         .insight-card {
-            background: rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.03);
             border-radius: 12px;
             padding: 16px;
-            border: 1px solid rgba(164,137,118,0.1);
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .insight-card h4 {
@@ -403,7 +485,7 @@
         .context-tags { display: flex; flex-wrap: wrap; gap: 6px; }
         .context-tag {
             font-size: 0.65rem; padding: 4px 10px; border-radius: 12px;
-            background: rgba(164,137,118,0.15); color: var(--accent); border: 1px solid rgba(164,137,118,0.2);
+            background: rgba(255,255,255,0.08); color: var(--accent); border: 1px solid rgba(255,255,255,0.1);
         }
 
         /* ─── TOOLTIP ─── */
@@ -416,12 +498,12 @@
             padding: 10px 14px;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.2s;
-            backdrop-filter: blur(15px);
+            transition: opacity 0.2s, top 0.1s, left 0.1s;
+            backdrop-filter: blur(10px);
         }
 
         .tooltip.visible { opacity: 1; }
-        .tooltip .tt-name { font-family: 'Caveat', cursive; font-size: 1.1rem; }
+        .tooltip .tt-name { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 500; text-transform: uppercase; }
         .tooltip .tt-count { font-size: 0.7rem; color: var(--text-muted); }
 
         /* ─── LOADING ─── */
@@ -431,8 +513,8 @@
         }
         .loading-overlay.hidden { opacity: 0; pointer-events: none; }
         .loading-overlay h2 {
-            font-family: 'Caveat', cursive; font-size: 2.5rem; margin-bottom: 8px;
-            background: linear-gradient(135deg, #F1EDFF, #a48976); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: 'Montserrat', sans-serif; font-size: 2.5rem; margin-bottom: 8px; font-weight: 500; text-transform: uppercase;
+            background: linear-gradient(135deg, #ffffff, #aaaaaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .loading-overlay p { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 2px; }
         .loading-ring {
@@ -446,21 +528,36 @@
             position: fixed; bottom: 16px; right: 20px; z-index: 100;
             font-size: 0.6rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
             display: flex; align-items: center; gap: 6px;
+            background: rgba(0, 0, 0, 0.6); padding: 8px 14px; border-radius: 20px;
+            border: 1px solid var(--border-glow); cursor: pointer; backdrop-filter: blur(10px);
+            transition: all 0.3s;
         }
-        .data-mode .dot { width: 6px; height: 6px; border-radius: 50%; background: #a48976; }
+        .data-mode:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-light); }
+        .data-mode .dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; }
         .data-mode .dot.live { background: #4caf50; animation: pulse 2s infinite; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         @media (max-width: 768px) {
-            .insight-grid { grid-template-columns: 1fr; }
             .stats-bar { display: none; }
-            #sidebarToggle { bottom: 80px; left: 10px; }
+            #sidebarToggle { top: auto; bottom: 80px; left: 16px; }
+            .exit-button { left: 15px; top: 15px; width: 22px; height: 22px; font-size: 0.6rem; }
+            .header { padding-left: 45px; }
             .sidebar { 
-                top: auto; bottom: 80px; left: 10px; transform: translateY(150%); max-width: 90%;
+                top: auto; bottom: 80px; left: 10px; right: auto; transform: translateY(150%); max-width: calc(100% - 20px);
                 max-height: 60vh; width: 100%; border-radius: 16px; border: 1px solid var(--border-glow);
             }
             .sidebar.open { transform: translateY(0); }
-            .header { padding: 12px 16px; }
+            .insight-panel {
+                top: auto; bottom: 0; left: 50%; right: auto;
+                transform: translateX(-50%) translateY(100%);
+                width: 100%; max-width: 100%; height: 65vh;
+                border-radius: 20px 20px 0 0;
+                padding: 24px 20px 80px 24px;
+                border: 1px solid var(--border-glow);
+                border-bottom: none;
+            }
+            .insight-panel.visible { transform: translateX(-50%) translateY(0); }
+            .header { padding: 12px 16px 12px 45px; }
             .logo-area h1 { font-size: 1.4rem; }
         }
     </style>
@@ -471,6 +568,8 @@
         <p>El Closet Expandido</p>
         <div class="loading-ring"></div>
     </div>
+
+    <a href="javascript:history.back()" class="exit-button" title="Volver a la página anterior">✕</a>
 
     <canvas id="universe-canvas"></canvas>
 
@@ -485,31 +584,32 @@
         </div>
     </div>
 
-    <!-- Toggle buttons -->
     <button class="panel-toggle" id="sidebarToggle">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
         Filtros
     </button>
-    <button class="panel-toggle" id="configToggle">Conectar Base de Datos</button>
 
     <div class="config-panel" id="configPanel">
         <button class="close-panel-btn" id="closeConfig">✕</button>
         <h3>Conectar Base de Datos</h3>
-        <p>Esta visualización se conecta a la hoja de El Closet Expandido. Para conectar otra hoja, ingresa la URL del CSV o el ID del spreadsheet.</p>
+        <p>Ingresa la URL del CSV o el ID del spreadsheet.</p>
         <input type="text" id="sheetId" placeholder="URL del CSV o ID del Google Sheet">
         <input type="text" id="sheetName" placeholder="Nombre de la hoja (ej: Sheet1)" value="Sheet1">
         <button class="btn-connect" id="btnConnect">Conectar y Cargar Datos</button>
         <div class="status" id="connStatus"></div>
     </div>
 
-    <!-- Enhanced Sidebar with Filters -->
-    <div class="sidebar" id="sidebar">
-        <!-- Filters will be injected here by JS -->
-    </div>
+    <div class="sidebar" id="sidebar"></div>
 
     <div class="tooltip" id="tooltip">
         <div class="tt-name" id="ttName"></div>
         <div class="tt-count" id="ttCount"></div>
+    </div>
+
+    <div class="insight-nav-container" id="insightNav">
+        <button id="prevInsightBtn" class="nav-btn" title="Anterior">◄</button>
+        <span class="insight-nav-text" style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted)">Navegar</span>
+        <button id="nextInsightBtn" class="nav-btn" title="Siguiente">►</button>
     </div>
 
     <div class="insight-panel" id="insightPanel">
@@ -522,16 +622,12 @@
         <div class="insight-grid" id="insightGrid"></div>
     </div>
 
-    <div class="data-mode">
+    <button class="data-mode" id="dataModeBtn" title="Configurar Conexión">
         <div class="dot" id="dataModeDot"></div>
         <span id="dataModeLabel">Datos de demostración</span>
-    </div>
+    </button>
 
     <script>
-    // ═══════════════════════════════════════════
-    // CONSTANTS & VOCABULARY
-    // ═══════════════════════════════════════════
-
     const EMOTION_COLORS = {
         'Amor': '#e85d75', 'Nostalgia': '#7b8cc4', 'Miedo': '#5c4a72', 'Alegría': '#f5c542',
         'Tristeza': '#4a7fa5', 'Esperanza': '#7ecba1', 'Orgullo': '#d4a03c', 'Vergüenza': '#c47a8f',
@@ -543,130 +639,63 @@
     };
 
     const EMOTION_LEXICON = {
-        'Amor': ['amor', 'amar', 'amaba', 'amé', 'enamorar', 'enamorado', 'enamorada', 'querer', 'quiero', 'cariño', 'cariñoso', 'afecto', 'afectuoso', 'adorar', 'adoración', 'pasión', 'apasionado', 'corazón', 'romántico', 'ternura', 'tierno', 'amado', 'amada', 'amoroso', 'amorosa', 'te amo', 'te quiero', 'abrazo', 'abrazar', 'beso', 'besar'],
-        'Nostalgia': ['nostalgia', 'nostálgico', 'nostálgica', 'añorar', 'añoranza', 'extrañar', 'extraño', 'recuerdo', 'recordar', 'remembranza', 'evocación', 'evocar', 'pasado', 'memoria', 'memorias', 'infancia', 'niñez', 'antes', 'aquellos tiempos', 'aquellos días'],
-        'Miedo': ['miedo', 'miedos', 'temer', 'temor', 'temía', 'terror', 'pánico', 'aterrorizar', 'asustar', 'asustado', 'asustada', 'susto', 'espanto', 'fobia', 'angustia', 'angustiado', 'pavor', 'temeroso', 'temerosa', 'aterrado', 'aterrada', 'intimidar', 'intimidado', 'amenaza'],
-        'Alegría': ['alegría', 'alegre', 'feliz', 'felicidad', 'gozo', 'gozar', 'júbilo', 'regocijo', 'contento', 'contenta', 'satisfecho', 'satisfacción', 'dicha', 'dichoso', 'dichosa', 'euforia', 'eufórico', 'celebrar', 'celebración', 'risa', 'reír', 'sonrisa', 'sonreír', 'entusiasmo', 'entusiasmado', 'ilusión', 'ilusionado'],
-        'Tristeza': ['tristeza', 'triste', 'tristes', 'llorar', 'llanto', 'lágrimas', 'pena', 'dolor', 'doler', 'dolía', 'sufrir', 'sufrimiento', 'pesar', 'desconsuelo', 'desolación', 'desolado', 'desolada', 'abatido', 'abatida', 'afligido', 'aflicción', 'lamento', 'lamentar', 'desdicha', 'desdichado'],
-        'Esperanza': ['esperanza', 'esperar', 'esperanzado', 'esperanzada', 'optimismo', 'optimista', 'ilusión', 'soñar', 'sueño', 'sueños', 'anhelo', 'anhelar', 'aspirar', 'aspiración', 'futuro', 'mañana', 'posibilidad', 'oportunidad', 'confianza', 'confiar', 'fe', 'creer'],
-        'Orgullo': ['orgullo', 'orgulloso', 'orgullosa', 'digno', 'dignidad', 'satisfacción', 'logro', 'lograr', 'alcanzar', 'éxito', 'exitoso', 'superar', 'superación', 'triunfo', 'triunfar', 'conquista', 'conquistar', 'honor', 'honra', 'merecer'],
-        'Vergüenza': ['vergüenza', 'avergonzar', 'avergonzado', 'avergonzada', 'pena', 'penoso', 'bochorno', 'humillación', 'humillar', 'humillado', 'rubor', 'sonrojo', 'pudor', 'embarazoso', 'embarazo', 'incomodidad', 'incómodo', 'incómoda', 'esconder', 'ocultar'],
-        'Libertad': ['libertad', 'libre', 'liberar', 'liberación', 'liberarse', 'independencia', 'independiente', 'autonomía', 'autónomo', 'autónoma', 'emancipar', 'emancipación', 'desatar', 'soltar', 'volar', 'alas', 'romper cadenas', 'escapar'],
-        'Soledad': ['soledad', 'solo', 'sola', 'solitario', 'solitaria', 'aislamiento', 'aislado', 'aislada', 'abandonar', 'abandono', 'abandonado', 'abandonada', 'desamparado', 'desamparada', 'desamparo', 'incomunicado', 'vacío', 'vacía'],
-        'Gratitud': ['gratitud', 'agradecer', 'agradecido', 'agradecida', 'agradecimiento', 'gracias', 'reconocer', 'reconocimiento', 'apreciar', 'aprecio', 'valorar', 'bendición', 'bendecir'],
-        'Rabia': ['rabia', 'rabioso', 'rabiosa', 'ira', 'iracundo', 'furia', 'furioso', 'furiosa', 'enojo', 'enojado', 'enojada', 'enojar', 'cólera', 'indignación', 'indignado', 'indignada', 'enfado', 'enfurecido', 'coraje', 'irritación', 'irritado', 'impotencia'],
-        'Ternura': ['ternura', 'tierno', 'tierna', 'delicadeza', 'delicado', 'dulzura', 'dulce', 'suave', 'suavidad', 'mimar', 'cuidar', 'cuidado', 'proteger', 'acunar', 'acariciar', 'caricia'],
-        'Resiliencia': ['resiliencia', 'resiliente', 'fortaleza', 'fuerte', 'resistir', 'resistencia', 'superar', 'superación', 'sobrevivir', 'salir adelante', 'aguantar', 'soportar', 'levantarse', 'recuperarse', 'renacer', 'persistir', 'perseverar', 'luchar'],
-        'Aceptación': ['aceptación', 'aceptar', 'acepté', 'aceptado', 'aceptada', 'reconciliar', 'reconciliación', 'resignar', 'resignación', 'conformar', 'conformidad', 'comprender', 'comprensión', 'entender', 'tolerar', 'tolerancia', 'perdonar', 'perdón'],
-        'Confusión': ['confusión', 'confundido', 'confundida', 'confundir', 'desorientado', 'desorientada', 'desorientación', 'perdido', 'perdida', 'incertidumbre', 'duda', 'dudar', 'indecisión', 'indeciso', 'indecisa', 'no saber', 'no entender', 'desconcertado', 'caos'],
-        'Vulnerabilidad': ['vulnerabilidad', 'vulnerable', 'frágil', 'fragilidad', 'débil', 'debilidad', 'indefenso', 'indefensa', 'desprotegido', 'desprotegida', 'expuesto', 'expuesta', 'sensible', 'sensibilidad', 'herido', 'herida'],
-        'Valentía': ['valentía', 'valiente', 'valor', 'coraje', 'arrojo', 'atreverse', 'atrevido', 'atrevida', 'audacia', 'audaz', 'intrépido', 'intrépida', 'enfrentar', 'afrontar', 'decidido', 'decidida', 'determinación', 'agallas', 'osadía'],
-        'Melancolía': ['melancolía', 'melancólico', 'melancólica', 'languidez', 'lánguido', 'lánguida', 'apagado', 'apagada', 'marchito', 'marchita', 'decaimiento', 'decaído', 'decaída', 'saudade'],
-        'Pertenencia': ['pertenencia', 'pertenecer', 'arraigo', 'arraigado', 'arraigada', 'raíces', 'hogar', 'casa', 'patria', 'comunidad', 'identidad', 'origen', 'lugar', 'vínculo', 'vincular', 'conexión', 'conectar'],
-        'Paz': ['paz', 'pacífico', 'pacífica', 'calma', 'calmado', 'calmada', 'tranquilidad', 'tranquilo', 'tranquila', 'serenidad', 'sereno', 'serena', 'sosiego', 'armonía', 'equilibrio', 'reposo', 'descanso', 'quietud'],
-        'Asombro': ['asombro', 'asombrado', 'asombrada', 'sorpresa', 'sorprendido', 'sorprendida', 'maravilla', 'maravillado', 'maravillada', 'fascinación', 'fascinado', 'fascinada', 'admiración', 'admirado', 'admirada', 'impresionante', 'impresionado', 'impactado', 'impactada'],
+        'Amor': ['amor', 'amar', 'amaba', 'amé', 'enamorar', 'querer', 'cariño', 'pasión', 'corazón', 'ternura'],
+        'Nostalgia': ['nostalgia', 'añorar', 'extrañar', 'recuerdo', 'recordar', 'pasado', 'infancia'],
+        'Miedo': ['miedo', 'temer', 'terror', 'pánico', 'asustar', 'angustia', 'pavor'],
+        'Alegría': ['alegría', 'alegre', 'feliz', 'felicidad', 'gozo', 'risa', 'sonrisa', 'ilusión'],
+        'Tristeza': ['tristeza', 'triste', 'llorar', 'llanto', 'lágrimas', 'pena', 'dolor', 'sufrir'],
+        'Esperanza': ['esperanza', 'esperar', 'optimismo', 'soñar', 'futuro', 'fe', 'creer'],
+        'Orgullo': ['orgullo', 'orgulloso', 'dignidad', 'logro', 'éxito', 'triunfo'],
+        'Vergüenza': ['vergüenza', 'avergonzar', 'bochorno', 'humillación', 'pudor'],
+        'Libertad': ['libertad', 'libre', 'liberar', 'independencia', 'autonomía', 'volar'],
+        'Soledad': ['soledad', 'solo', 'sola', 'aislamiento', 'aislado', 'vacío'],
+        'Gratitud': ['gratitud', 'agradecer', 'gracias', 'reconocer', 'valorar'],
+        'Rabia': ['rabia', 'ira', 'furia', 'enojo', 'enojar', 'indignación', 'enfado'],
+        'Ternura': ['ternura', 'tierno', 'tierna', 'dulzura', 'mimar', 'cuidar'],
+        'Resiliencia': ['resiliencia', 'fortaleza', 'fuerte', 'resistir', 'superar', 'luchar'],
+        'Aceptación': ['accepted', 'aceptar', 'reconciliar', 'comprender', 'tolerar', 'perdonar'],
+        'Confusión': ['confusión', 'confundido', 'desorientado', 'perdido', 'duda', 'caos'],
+        'Vulnerabilidad': ['vulnerabilidad', 'vulnerable', 'frágil', 'fragilidad', 'débil', 'indefenso', 'sensible'],
+        'Valentía': ['valentía', 'valiente', 'valor', 'coraje', 'atreverse', 'determinación'],
+        'Melancolía': ['melancolía', 'melancólico', 'languidez', 'apagado', 'marchito'],
+        'Pertenencia': ['pertenencia', 'pertenecer', 'arraigo', 'hogar', 'identidad', 'conexión'],
+        'Paz': ['paz', 'calma', 'calmado', 'tranquilidad', 'serenidad', 'armonía', 'reposo'],
+        'Asombro': ['asombro', 'asombrado', 'sorpresa', 'maravilla', 'impacto', 'fascinación'],
     };
 
     function getEmotionColor(emotion) {
-        return EMOTION_COLORS[emotion] || `hsl(${hashStr(emotion) % 360}, 55%, 55%)`;
+        return EMOTION_COLORS[emotion] || '#ffffff';
     }
 
-    function hashStr(s) {
-        let h = 0;
-        for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i);
-        return Math.abs(h);
-    }
-
-    // ═══════════════════════════════════════════
-    // DATA LAYER & FILTERS
-    // ═══════════════════════════════════════════
-
-    // Store raw participants so we can filter them dynamically
     let globalRawParticipants = [];
     let currentAggregatedData = null;
+    let activeFilters = { gender: null, ageGroup: null, location: null, context: null };
+    const LIVE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqtNYoWvnjPE0P15GFE1cTE7VX-Pla9CDYatWJkiuVH0dzwIYGShoOkj7Unolt_ch0LL-dP4BMrfDB/pub?output=csv';
 
-    // Active filters state
-    let activeFilters = {
-        gender: null,
-        ageGroup: null,
-        location: null,
-        context: null
-    };
-
-    // ─── GENERATE DEMO RAW PARTICIPANTS ───
     function generateDemoParticipants() {
         const participants = [];
         const locations = ['Museo Nacional', 'C.C. Av Chile']; 
-        const ageGroups = [
-            { label: '15-17', min: 15, max: 17, count: 2, genderSplit: [0, 2] },
-            { label: '18-25', min: 18, max: 25, count: 27, genderSplit: [14, 13] },
-            { label: '26-35', min: 26, max: 35, count: 29, genderSplit: [18, 11] },
-            { label: '36-45', min: 36, max: 45, count: 8, genderSplit: [3, 5] },
-            { label: '46-55', min: 46, max: 55, count: 4, genderSplit: [1, 3] },
-            { label: '56+', min: 56, max: 67, count: 2, genderSplit: [0, 2] },
-        ];
+        const ageGroups = ['15-17', '18-25', '26-35', '36-45', '46-55', '56+'];
         const dimensions = ['Cultura', 'Autopercepción', 'Relaciones Personales', 'Experiencias'];
+        const emotionKeys = Object.keys(EMOTION_COLORS);
 
-        const emotionProfiles = {
-            youngFemale: { primary: ['Vulnerabilidad', 'Esperanza', 'Amor', 'Confusión', 'Valentía'], secondary: ['Alegría', 'Miedo', 'Aceptación'] },
-            youngMale: { primary: ['Miedo', 'Orgullo', 'Soledad', 'Esperanza', 'Valentía'], secondary: ['Rabia', 'Libertad', 'Vergüenza'] },
-            adultFemale: { primary: ['Nostalgia', 'Gratitud', 'Resiliencia', 'Amor', 'Ternura'], secondary: ['Tristeza', 'Aceptación', 'Melancolía'] },
-            adultMale: { primary: ['Nostalgia', 'Orgullo', 'Soledad', 'Libertad', 'Gratitud'], secondary: ['Vergüenza', 'Resiliencia', 'Valentía'] },
-            olderFemale: { primary: ['Nostalgia', 'Gratitud', 'Ternura', 'Aceptación'], secondary: ['Melancolía', 'Alegría', 'Resiliencia'] },
-            cultural: { primary: ['Orgullo', 'Nostalgia', 'Gratitud'], secondary: ['Alegría', 'Melancolía'] },
-            selfPerception: { primary: ['Vulnerabilidad', 'Vergüenza', 'Aceptación', 'Libertad'], secondary: ['Confusión', 'Valentía', 'Orgullo'] },
-            relationships: { primary: ['Amor', 'Soledad', 'Tristeza', 'Ternura'], secondary: ['Miedo', 'Gratitud', 'Esperanza'] },
-            experiences: { primary: ['Miedo', 'Resiliencia', 'Valentía', 'Alegría'], secondary: ['Rabia', 'Esperanza', 'Libertad'] },
-        };
-
-        let id = 0;
-
-        for (const group of ageGroups) {
-            // Males
-            for (let i = 0; i < group.genderSplit[0]; i++) {
-                const isYoung = group.min < 30;
-                const profile = isYoung ? emotionProfiles.youngMale : emotionProfiles.adultMale;
-                const dim = dimensions[Math.floor(Math.random() * dimensions.length)];
-                const dimProfile = emotionProfiles[dim === 'Cultura' ? 'cultural' : dim === 'Autopercepción' ? 'selfPerception' : dim === 'Relaciones Personales' ? 'relationships' : 'experiences'];
-                const loc = locations[Math.random() > 0.3 ? 0 : 1]; // Biased towards Museo
-
-                const emotions = [
-                    profile.primary[Math.floor(Math.random() * profile.primary.length)],
-                    dimProfile.primary[Math.floor(Math.random() * dimProfile.primary.length)],
-                    profile.secondary[Math.floor(Math.random() * profile.secondary.length)]
-                ].filter((v,i,a) => a.indexOf(v) === i); // Unique
-
-                participants.push({
-                    id: id++, gender: 'Masculino', ageGroup: group.label, location: loc,
-                    contexts: [dim], emotions, sampleText: 'Análisis generado para ' + emotions[0]
-                });
-            }
-            // Females
-            for (let i = 0; i < group.genderSplit[1]; i++) {
-                const isYoung = group.min < 30;
-                const isOlder = group.min >= 46;
-                const profile = isOlder ? emotionProfiles.olderFemale : (isYoung ? emotionProfiles.youngFemale : emotionProfiles.adultFemale);
-                const dim = dimensions[Math.floor(Math.random() * dimensions.length)];
-                const dimProfile = emotionProfiles[dim === 'Cultura' ? 'cultural' : dim === 'Autopercepción' ? 'selfPerception' : dim === 'Relaciones Personales' ? 'relationships' : 'experiences'];
-                const loc = locations[Math.random() > 0.3 ? 0 : 1];
-
-                const emotions = [
-                    profile.primary[Math.floor(Math.random() * profile.primary.length)],
-                    dimProfile.primary[Math.floor(Math.random() * dimProfile.primary.length)],
-                    profile.secondary[Math.floor(Math.random() * profile.secondary.length)]
-                ].filter((v,i,a) => a.indexOf(v) === i);
-
-                participants.push({
-                    id: id++, gender: 'Femenino', ageGroup: group.label, location: loc,
-                    contexts: [dim], emotions, sampleText: 'Análisis generado para ' + emotions[0]
-                });
-            }
+        for (let i = 0; i < 72; i++) {
+            const emotions = [
+                emotionKeys[Math.floor(Math.random() * emotionKeys.length)],
+                emotionKeys[Math.floor(Math.random() * emotionKeys.length)]
+            ];
+            participants.push({
+                id: i,
+                gender: Math.random() > 0.5 ? 'Femenino' : 'Masculino',
+                ageGroup: ageGroups[Math.floor(Math.random() * ageGroups.length)],
+                location: locations[Math.floor(Math.random() * locations.length)],
+                contexts: [dimensions[Math.floor(Math.random() * dimensions.length)]],
+                emotions: [...new Set(emotions)],
+                sampleText: 'Fragmento de ejemplo del análisis emocional generado para esta simulación.'
+            });
         }
         return participants;
     }
-
-    // ─── GOOGLE SHEETS PARSING ───
-    const LIVE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqtNYoWvnjPE0P15GFE1cTE7VX-Pla9CDYatWJkiuVH0dzwIYGShoOkj7Unolt_ch0LL-dP4BMrfDB/pub?output=csv';
 
     async function loadFromCSVUrl(url) {
         const resp = await fetch(url);
@@ -677,650 +706,240 @@
 
     function parseCSVToParticipants(csv) {
         const rows = parseCSV(csv);
-        if (rows.length < 2) throw new Error('La hoja no tiene datos suficientes.');
-
+        if (rows.length < 2) return [];
         const headers = rows[0].map(h => h.toLowerCase().trim().replace(/[""]/g, ''));
-        const findCol = (patterns) => headers.findIndex(h => patterns.some(p => h.includes(p)));
+        const findCol = (p) => headers.findIndex(h => p.some(x => h.includes(x)));
         
-        const genderIdx = findCol(['gender', 'género', 'genero', 'sexo']);
-        const ageIdx = findCol(['age', 'edad']);
-        const locIdx = findCol(['location', 'ubicación', 'sede', 'lugar']);
-        const storyIdx = findCol(['story', 'historia', 'narrativa', 'relato']);
-        const emotionAnalysisIdx = findCol(['análisis de emoción', 'analisis']);
-        const emotionPoeticIdx = findCol(['emoción poética', 'emoción']);
+        const gIdx = findCol(['gender', 'género', 'genero', 'sexo']), aIdx = findCol(['age', 'edad']), lIdx = findCol(['location', 'ubicación', 'lugar']), sIdx = findCol(['story', 'historia', 'narrativa']), eAIdx = findCol(['análisis', 'analisis']), ePIdx = findCol(['poética', 'poetica']);
         
-        const emotionColumns = [emotionPoeticIdx, emotionAnalysisIdx, storyIdx].filter(i => i !== -1);
         const participants = [];
-
         for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (row.every(c => !c || c.trim() === '')) continue;
-
-            const genderRaw = genderIdx !== -1 ? (row[genderIdx] || '').toLowerCase().trim() : '';
-            const gender = classifyGender(genderRaw);
-
-            const ageRaw = ageIdx !== -1 ? (row[ageIdx] || '').trim() : '';
-            const ageGroup = classifyAgeGroup(ageRaw);
-
-            const locRaw = locIdx !== -1 ? (row[locIdx] || '').trim() : 'Desconocida';
-            const location = locRaw || 'Desconocida';
-
-            const storyText = storyIdx !== -1 ? (row[storyIdx] || '') : row.join(' ');
-            const contexts = detectContexts(storyText);
-
-            let allDetected = [];
-            if (emotionColumns.length > 0) {
-                for (const colIdx of emotionColumns) {
-                    const text = (row[colIdx] || '').trim();
-                    if (text.length > 0) allDetected.push(...extractEmotionsDeep(text));
-                }
-            } else {
-                for (let c = 0; c < row.length; c++) {
-                    const text = (row[c] || '').trim();
-                    if (text.length > 30) allDetected.push(...extractEmotionsDeep(text));
-                }
-            }
-
-            const uniqueEmotions = [...new Set(allDetected)];
-            if (uniqueEmotions.length === 0) uniqueEmotions.push('Sin clasificar');
-
-            const sampleText = emotionAnalysisIdx !== -1 ? (row[emotionAnalysisIdx] || '').trim() : '';
-
-            participants.push({
-                id: i, gender, ageGroup, location, contexts,
-                emotions: uniqueEmotions,
-                sampleText: sampleText.length > 10 ? sampleText.slice(0, 120) + '...' : ''
-            });
+            const row = rows[i]; if (row.every(c => !c || c.trim() === '')) continue;
+            const emotions = [...new Set(extractEmotionsDeep((row[ePIdx]||'') + ' ' + (row[eAIdx]||'') + ' ' + (row[sIdx]||'')))];
+            participants.push({ id: i, gender: (row[gIdx]||'').toLowerCase().includes('fem')?'Femenino':((row[gIdx]||'').toLowerCase().includes('masc')?'Masculino':'Otro'), ageGroup: classifyAgeGroup(row[aIdx]), location: row[lIdx] || 'Desconocida', contexts: detectContexts(row[sIdx]||''), emotions: emotions.length ? emotions : ['Sin clasificar'], sampleText: (row[eAIdx]||'').slice(0, 150) });
         }
         return participants;
     }
 
-    function classifyGender(g) {
-        if (!g) return 'No Especificado';
-        if (g.includes('fem') || g.includes('mujer') || g === 'f') return 'Femenino';
-        if (g.includes('masc') || g.includes('hombre') || g === 'm') return 'Masculino';
-        return 'Otro';
-    }
+    function classifyAgeGroup(a) { const age = parseInt(a); if (isNaN(age)) return 'Desconocida'; if (age < 18) return '15-17'; if (age <= 25) return '18-25'; if (age <= 35) return '26-35'; if (age <= 45) return '36-45'; if (age <= 55) return '46-55'; return '56+'; }
+    function detectContexts(t) { const l = t.toLowerCase(), c = []; if (/cultur|tradici/.test(l)) c.push('Cultura'); if (/autoestima|yo|ser/.test(l)) c.push('Autopercepción'); if (/relaci|familia/.test(l)) c.push('Relaciones Personales'); if (/experiencia|historia/.test(l)) c.push('Experiencias'); return c.length ? c : ['General']; }
+    function extractEmotionsDeep(t) { const f = [], l = t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); for (const [e, k] of Object.entries(EMOTION_LEXICON)) { for (const kw of k) { if (new RegExp('\\b' + kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '') + '\\b', 'i').test(l)) { f.push(e); break; } } } return f; }
+    function parseCSV(t) { const r = []; let c = [], cl = '', q = false; for (let i = 0; i < t.length; i++) { const ch = t[i]; if (q) { if (ch === '"' && t[i+1] === '"') { cl += '"'; i++; } else if (ch === '"') q = false; else cl += ch; } else { if (ch === '"') q = true; else if (ch === ',') { c.push(cl); cl = ''; } else if (ch === '\n' || ch === '\r') { if (ch === '\r' && t[i+1] === '\n') i++; c.push(cl); cl = ''; if (c.some(x => x.trim())) r.push(c); c = []; } else cl += ch; } } c.push(cl); if (c.some(x => x.trim())) r.push(c); return r; }
 
-    function classifyAgeGroup(ageRaw) {
-        const age = parseInt(ageRaw);
-        if (isNaN(age)) return 'Desconocida';
-        if (age < 18) return '15-17';
-        if (age <= 25) return '18-25';
-        if (age <= 35) return '26-35';
-        if (age <= 45) return '36-45';
-        if (age <= 55) return '46-55';
-        return '56+';
-    }
-
-    function detectContexts(text) {
-        const lower = text.toLowerCase();
-        const contexts = [];
-        if (/cultur|tradici|costumbr|raíc|raiz|país|nación|patria/.test(lower)) contexts.push('Cultura');
-        if (/autoestima|autopercepci|cuerpo|imagen|identidad|yo|ser/.test(lower)) contexts.push('Autopercepción');
-        if (/relaci|amig|familia|padre|madre|hij|pareja|amor|víncul/.test(lower)) contexts.push('Relaciones Personales');
-        if (/experiencia|vivencia|momento|recuerdo|historia|anécdota/.test(lower)) contexts.push('Experiencias');
-        return contexts.length > 0 ? contexts : ['General'];
-    }
-
-    function extractEmotionsDeep(text) {
-        const found = [];
-        const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); 
-        const lowerWithAccents = text.toLowerCase();
-
-        for (const [emotion, keywords] of Object.entries(EMOTION_LEXICON)) {
-            for (const kw of keywords) {
-                const kwNorm = kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                const re = new RegExp('\\b' + kwNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-                if (re.test(lower) || lowerWithAccents.includes(kw)) {
-                    found.push(emotion);
-                    break;
-                }
-            }
-        }
-        return found;
-    }
-
-    function parseCSV(text) {
-        const rows = [];
-        let current = []; let cell = ''; let inQuotes = false;
-        for (let i = 0; i < text.length; i++) {
-            const ch = text[i];
-            if (inQuotes) {
-                if (ch === '"' && text[i+1] === '"') { cell += '"'; i++; }
-                else if (ch === '"') inQuotes = false;
-                else cell += ch;
-            } else {
-                if (ch === '"') inQuotes = true;
-                else if (ch === ',') { current.push(cell); cell = ''; }
-                else if (ch === '\n' || ch === '\r') {
-                    if (ch === '\r' && text[i+1] === '\n') i++;
-                    current.push(cell); cell = '';
-                    if (current.some(c => c.trim() !== '')) rows.push(current);
-                    current = [];
-                } else cell += ch;
-            }
-        }
-        current.push(cell);
-        if (current.some(c => c.trim() !== '')) rows.push(current);
-        return rows;
-    }
-
-    // ─── AGGREGATION & FILTER LOGIC ───
     function applyFilters() {
-        // Filter raw participants
-        const filtered = globalRawParticipants.filter(p => {
-            if (activeFilters.gender && p.gender !== activeFilters.gender) return false;
-            if (activeFilters.ageGroup && p.ageGroup !== activeFilters.ageGroup) return false;
-            if (activeFilters.location && p.location !== activeFilters.location) return false;
-            if (activeFilters.context && !p.contexts.includes(activeFilters.context)) return false;
-            return true;
-        });
-
-        // Aggregate filtered participants into emotions format for Canvas
-        const emotionMap = {};
-        filtered.forEach(p => {
-            p.emotions.forEach(emo => {
-                if (!emotionMap[emo]) {
-                    emotionMap[emo] = {
-                        name: emo, weight: 0,
-                        contexts: new Set(),
-                        genders: { Femenino: 0, Masculino: 0, Otro: 0, 'No Especificado': 0 },
-                        ages: { '15-17':0, '18-25':0, '26-35':0, '36-45':0, '46-55':0, '56+':0, 'Desconocida':0 },
-                        locations: {},
-                        sampleTexts: []
-                    };
-                }
-                const eData = emotionMap[emo];
-                eData.weight++;
-                if (eData.genders[p.gender] !== undefined) eData.genders[p.gender]++;
-                if (eData.ages[p.ageGroup] !== undefined) eData.ages[p.ageGroup]++;
-                
-                if (!eData.locations[p.location]) eData.locations[p.location] = 0;
-                eData.locations[p.location]++;
-
-                p.contexts.forEach(c => eData.contexts.add(c));
-                
-                if (p.sampleText && eData.sampleTexts.length < 3 && !eData.sampleTexts.includes(p.sampleText)) {
-                    eData.sampleTexts.push(p.sampleText);
-                }
-            });
-        });
-
-        const emotionsList = Object.values(emotionMap)
-            .map(e => ({ ...e, contexts: [...e.contexts] }))
-            .sort((a, b) => b.weight - a.weight);
-
-        currentAggregatedData = {
-            emotions: emotionsList,
-            totalParticipants: filtered.length,
-            totalEmotions: emotionsList.length
-        };
-
-        // Update UI
+        const filtered = globalRawParticipants.filter(p => (!activeFilters.gender || p.gender === activeFilters.gender) && (!activeFilters.ageGroup || p.ageGroup === activeFilters.ageGroup) && (!activeFilters.location || p.location === activeFilters.location) && (!activeFilters.context || p.contexts.includes(activeFilters.context)));
+        const map = {};
+        filtered.forEach(p => p.emotions.forEach(e => {
+            if (!map[e]) map[e] = { name: e, weight: 0, contexts: new Set(), genders: { Femenino: 0, Masculino: 0, Otro: 0 }, ages: {}, locations: {}, sampleTexts: [] };
+            const d = map[e]; d.weight++; d.genders[p.gender]++; d.ages[p.ageGroup] = (d.ages[p.ageGroup]||0)+1; d.locations[p.location] = (d.locations[p.location]||0)+1; p.contexts.forEach(ctx => d.contexts.add(ctx)); if (p.sampleText && d.sampleTexts.length < 3 && !d.sampleTexts.includes(p.sampleText)) d.sampleTexts.push(p.sampleText);
+        }));
+        const emotions = Object.values(map).map(e => ({ ...e, contexts: [...e.contexts] })).sort((a, b) => b.weight - a.weight);
+        currentAggregatedData = { emotions, totalParticipants: filtered.length, totalEmotions: emotions.length };
         document.getElementById('statParticipants').textContent = currentAggregatedData.totalParticipants;
         document.getElementById('statEmotions').textContent = currentAggregatedData.totalEmotions;
-        
         buildPlanets(currentAggregatedData);
-        updateEmotionListSidebar(currentAggregatedData.emotions);
-
-        // Hide insight if selected emotion disappeared
-        if (selectedEmotion && !emotionsList.find(e => e.name === selectedEmotion)) {
-            hideInsight();
-        }
+        updateEmotionListSidebar(emotions);
     }
 
-    // ─── BUILD SIDEBAR UI ───
     function buildSidebarUI() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.innerHTML = ''; // Clear
-
-        // Add close button and title
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'close-panel-btn';
-        closeBtn.innerHTML = '✕';
-        closeBtn.onclick = () => sidebar.classList.remove('open');
-        sidebar.appendChild(closeBtn);
-
-        const sidebarTitle = document.createElement('h3');
-        sidebarTitle.style.fontFamily = "'Caveat', cursive";
-        sidebarTitle.style.fontSize = "1.5rem";
-        sidebarTitle.style.color = "var(--card-bg)";
-        sidebarTitle.style.marginBottom = "8px";
-        sidebarTitle.textContent = "Filtros";
-        sidebar.appendChild(sidebarTitle);
-
-        // Find unique values for filters from ALL raw data (so filters don't disappear)
-        const genders = [...new Set(globalRawParticipants.map(p => p.gender))].filter(g => g !== 'No Especificado');
-        const ages = [...new Set(globalRawParticipants.map(p => p.ageGroup))].filter(a => a !== 'Desconocida').sort();
-        const locs = [...new Set(globalRawParticipants.map(p => p.location))].filter(Boolean);
-        const dims = [...new Set(globalRawParticipants.flatMap(p => p.contexts))].filter(c => c !== 'General');
-
-        // Helper to create a filter section
-        const createFilterSection = (title, items, filterKey) => {
-            const section = document.createElement('div');
-            section.className = 'filter-section';
-            
-            const titleEl = document.createElement('div');
-            titleEl.className = 'filter-title';
-            titleEl.textContent = title;
-            
-            const chips = document.createElement('div');
-            chips.className = 'filter-chips';
-
-            // ALL button
-            const allChip = document.createElement('div');
-            allChip.className = `chip ${activeFilters[filterKey] === null ? 'active' : ''}`;
-            allChip.textContent = 'Todos';
-            allChip.onclick = () => {
-                activeFilters[filterKey] = null;
-                applyFilters();
-                buildSidebarUI(); // Rebuild to update active states & counts
-            };
-            chips.appendChild(allChip);
-
-            // Item buttons
-            items.forEach(item => {
-                // Count how many participants have this property IN THE RAW DATA (or currently filtered? Let's show raw global)
-                const count = globalRawParticipants.filter(p => {
-                    if (filterKey === 'context') return p.contexts.includes(item);
-                    return p[filterKey] === item;
-                }).length;
-
-                const chip = document.createElement('div');
-                chip.className = `chip ${activeFilters[filterKey] === item ? 'active' : ''}`;
-                chip.innerHTML = `${item}<span class="chip-count">${count}</span>`;
-                chip.onclick = () => {
-                    activeFilters[filterKey] = item;
-                    applyFilters();
-                    buildSidebarUI();
-                };
-                chips.appendChild(chip);
-            });
-
-            section.appendChild(titleEl);
-            section.appendChild(chips);
-            sidebar.appendChild(section);
-        };
-
-        createFilterSection('Género', genders, 'gender');
-        createFilterSection('Grupo Etario', ages, 'ageGroup');
-        createFilterSection('Ubicación', locs, 'location');
-        createFilterSection('Dimensión Identitaria', dims, 'context');
-
-        // Container for emotions
-        const emotionContainer = document.createElement('div');
-        emotionContainer.className = 'emotion-list-container';
-        emotionContainer.innerHTML = '<div class="filter-title">Emociones Detectadas (Resultados)</div>';
+        const sb = document.getElementById('sidebar'); sb.innerHTML = '';
+        const close = document.createElement('button'); close.className = 'close-panel-btn'; close.innerHTML = '✕'; close.onclick = () => sb.classList.remove('open'); sb.appendChild(close);
+        const title = document.createElement('h3'); title.style.cssText = "font-family:'Montserrat';font-weight:500;text-transform:uppercase;color:var(--card-bg);margin-bottom:8px;font-size:1.5rem;"; title.textContent = 'Filtros'; sb.appendChild(title);
         
-        const emotionList = document.createElement('div');
-        emotionList.id = 'emotion-list';
-        emotionList.style.display = 'flex';
-        emotionList.style.flexDirection = 'column';
-        emotionList.style.gap = '4px';
-
-        const allEmotionsBtn = document.createElement('button');
-        allEmotionsBtn.className = 'emotion-btn btn-all active';
-        allEmotionsBtn.innerHTML = `<span style="font-size:0.9em;">◉</span> Mostrar Todo`;
-        allEmotionsBtn.onclick = () => {
-            selectedEmotion = null;
-            document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
-            allEmotionsBtn.classList.add('active');
-            hideInsight();
+        const createSec = (t, items, k) => {
+            const sec = document.createElement('div'); sec.className = 'filter-section';
+            const ttl = document.createElement('div'); ttl.className = 'filter-title'; ttl.textContent = t; sec.appendChild(ttl);
+            const chips = document.createElement('div'); chips.className = 'filter-chips';
+            const all = document.createElement('div'); all.className = `chip ${!activeFilters[k]?'active':''}`; all.textContent = 'Todos'; all.onclick = () => { activeFilters[k] = null; applyFilters(); buildSidebarUI(); }; chips.appendChild(all);
+            items.forEach(i => {
+                const count = globalRawParticipants.filter(p => k === 'context' ? p.contexts.includes(i) : p[k] === i).length;
+                const chip = document.createElement('div'); chip.className = `chip ${activeFilters[k]===i?'active':''}`; chip.innerHTML = `${i}<span class="chip-count">${count}</span>`; chip.onclick = () => { activeFilters[k] = i; applyFilters(); buildSidebarUI(); }; chips.appendChild(chip);
+            });
+            sec.appendChild(chips); sb.appendChild(sec);
         };
-        emotionContainer.appendChild(allEmotionsBtn);
-        emotionContainer.appendChild(emotionList);
-        sidebar.appendChild(emotionContainer);
-
-        // Populate the emotion list based on CURRENT filtered data
+        createSec('Género', ['Femenino', 'Masculino', 'Otro'], 'gender');
+        createSec('Edad', ['15-17', '18-25', '26-35', '36-45', '46-55', '56+'], 'ageGroup');
+        createSec('Ubicación', [...new Set(globalRawParticipants.map(p => p.location))].filter(Boolean), 'location');
+        createSec('Dimensión', ['Cultura', 'Autopercepción', 'Relaciones Personales', 'Experiencias'], 'context');
+        
+        const listCont = document.createElement('div'); listCont.className = 'emotion-list-container'; listCont.innerHTML = '<div class="filter-title">Emociones Detectadas</div>';
+        const list = document.createElement('div'); list.id = 'emotion-list'; listCont.appendChild(list); sb.appendChild(listCont);
         updateEmotionListSidebar(currentAggregatedData.emotions);
     }
 
-    function updateEmotionListSidebar(emotions) {
-        const listEl = document.getElementById('emotion-list');
-        if (!listEl) return;
-        listEl.innerHTML = '';
-
-        emotions.forEach(emo => {
-            const btn = document.createElement('button');
-            btn.className = `emotion-btn ${selectedEmotion === emo.name ? 'active' : ''}`;
-            btn.innerHTML = `<span class="emotion-dot" style="background:${getEmotionColor(emo.name)}"></span>${emo.name}<span class="emotion-count">${emo.weight}</span>`;
-            btn.onclick = () => {
-                selectedEmotion = emo.name;
-                document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                showInsight(emo, getEmotionColor(emo.name));
-            };
-            listEl.appendChild(btn);
+    function updateEmotionListSidebar(ems) {
+        const el = document.getElementById('emotion-list'); if (!el) return; el.innerHTML = '';
+        ems.forEach(e => {
+            const b = document.createElement('button'); b.className = `emotion-btn ${selectedEmotion === e.name ? 'active' : ''}`;
+            b.innerHTML = `<span class="emotion-dot" style="background:${getEmotionColor(e.name)}"></span>${e.name}<span class="emotion-count">${e.weight}</span>`;
+            b.onclick = () => showInsight(e, getEmotionColor(e.name)); el.appendChild(b);
         });
     }
 
-    // ═══════════════════════════════════════════
-    // PARTICLE UNIVERSE ENGINE
-    // ═══════════════════════════════════════════
-    const canvas = document.getElementById('universe-canvas');
-    const ctx = canvas.getContext('2d');
-    let W, H;
-    let planets = [];
-    let particles = [];
-    let hoveredPlanet = null;
-    let selectedEmotion = null;
-    let mouse = { x: -1000, y: -1000 };
-    let animFrame;
-    let bgStars = [];
+    // ─── ENGINE ───
+    const canvas = document.getElementById('universe-canvas'), ctx = canvas.getContext('2d');
+    let W, H, planets = [], particles = [], hoveredPlanet = null, selectedEmotion = null, animFrame, bgStars = [], mouse = { x: -1000, y: -1000 }, draggedPlanet = null, dragDist = 0, universeCenter = { x: 0, y: 0 }, targetUniverseCenter = { x: 0, y: 0 }, currentSpread = 0, bgGlowAlpha = 0, selectedPlanetColor = '#000000', time = 0;
 
-    function resize() {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-        generateBgStars();
-    }
-
-    function generateBgStars() {
-        bgStars = [];
-        for (let i = 0; i < 200; i++) {
-            bgStars.push({
-                x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.2,
-                alpha: Math.random() * 0.5 + 0.1, twinklePhase: Math.random() * Math.PI * 2
-            });
-        }
-    }
-
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; universeCenter = { x: W/2, y: H/2 }; targetUniverseCenter = { x: W/2, y: H/2 }; generateBgStars(); }
+    function generateBgStars() { bgStars = []; for (let i = 0; i < 200; i++) bgStars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.2, alpha: Math.random()*0.5+0.1, twinklePhase: Math.random()*Math.PI*2 }); }
     window.addEventListener('resize', () => { resize(); if (currentAggregatedData) buildPlanets(currentAggregatedData); });
 
     function buildPlanets(data) {
-        planets = [];
-        particles = [];
-
-        const emotions = data.emotions;
-        if(emotions.length === 0) return;
-
-        const maxWeight = Math.max(...emotions.map(e => e.weight));
-        const minR = 25;
-        const maxR = Math.min(W, H) * 0.09;
-
-        // Space out planets keeping sidebar in mind
-        const cx = (W + 280) / 2; // Offset center due to sidebar
-        const cy = H / 2;
-        const orbitBase = Math.min(W, H) * 0.28;
-
-        emotions.forEach((emo, i) => {
-            const normalWeight = emo.weight / maxWeight;
-            const r = minR + (maxR - minR) * normalWeight;
-            const angle = (i / emotions.length) * Math.PI * 2 + Math.random() * 0.3;
-            const orbitR = orbitBase + (Math.random() - 0.5) * orbitBase * 0.6 + (1 - normalWeight) * 60;
-            
-            const x = cx + Math.cos(angle) * orbitR;
-            const y = cy + Math.sin(angle) * orbitR;
-            const color = getEmotionColor(emo.name);
-
-            planets.push({
-                x, y, r, color, emotion: emo.name, data: emo,
-                orbitAngle: angle, orbitSpeed: 0.0002 + Math.random() * 0.0003,
-                orbitR, pulsePhase: Math.random() * Math.PI * 2,
-            });
-
-            const particleCount = Math.floor(12 + normalWeight * 40);
-            for (let p = 0; p < particleCount; p++) {
-                const dist = Math.random() * r * 1.8;
-                const pAngle = Math.random() * Math.PI * 2;
-                particles.push({
-                    planetIdx: planets.length - 1,
-                    baseOffX: Math.cos(pAngle) * dist, baseOffY: Math.sin(pAngle) * dist,
-                    offsetX: 0, offsetY: 0,
-                    r: 1 + Math.random() * 2.5, alpha: 0.3 + Math.random() * 0.7, color,
-                    driftAngle: Math.random() * Math.PI * 2, driftSpeed: 0.003 + Math.random() * 0.008,
-                    driftR: 2 + Math.random() * 8, twinkle: Math.random() * Math.PI * 2
-                });
+        planets = []; particles = []; const ems = data.emotions; if (!ems.length) return;
+        const maxW = Math.max(...ems.map(e => e.weight)), minR = 25, maxR = Math.min(W, H)*0.09, orbitBase = Math.min(W, H)*0.28;
+        ems.forEach((e, i) => {
+            const nw = e.weight/maxW, r = minR + (maxR-minR)*nw, angle = (i/ems.length)*Math.PI*2 + Math.random()*0.3, orbitR = orbitBase + (i%3-1)*30 + (1-nw)*50 + Math.random()*20, color = getEmotionColor(e.name);
+            const grains = []; for (let g = 0; g < Math.floor(r*25); g++) grains.push({ angle: Math.random()*Math.PI*2, baseOffset: (Math.random()-0.5)*(r*0.25), size: Math.random()*1.5+0.5, speed: (Math.random()-0.5)*0.05 });
+            planets.push({ r, color, emotion: e.name, data: e, orbitAngle: angle, orbitSpeed: 0.0002+Math.random()*0.0003, baseOrbitR: orbitR, currentOrbitR: orbitR, pulsePhase: Math.random()*Math.PI*2, x: W/2, y: H/2, grains });
+            for (let p = 0; p < Math.floor(12+nw*40); p++) {
+                const dist = Math.random()*r*1.8, pa = Math.random()*Math.PI*2;
+                particles.push({ planetIdx: planets.length-1, baseOffX: Math.cos(pa)*dist, baseOffY: Math.sin(pa)*dist, offsetX: 0, offsetY: 0, r: 1+Math.random()*2.5, alpha: 0.3+Math.random()*0.7, color, driftAngle: Math.random()*Math.PI*2, driftSpeed: 0.003+Math.random()*0.008, driftR: 2+Math.random()*8, twinkle: Math.random()*Math.PI*2 });
             }
         });
     }
 
-    // ─── RENDERING ───
-    let time = 0;
-
     function drawFrame() {
-        time += 0.016;
-        ctx.clearRect(0, 0, W, H);
+        time += 0.016; ctx.clearRect(0, 0, W, H);
+        const bgGradBase = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H)*0.7); bgGradBase.addColorStop(0, '#111111'); bgGradBase.addColorStop(0.5, '#050505'); bgGradBase.addColorStop(1, '#000000'); ctx.fillStyle = bgGradBase; ctx.fillRect(0, 0, W, H);
+        
+        let targetBgGlowAlpha = selectedEmotion ? 1 : 0;
+        if (selectedEmotion) { let sel = planets.find(p => p.emotion === selectedEmotion); if (sel) selectedPlanetColor = sel.color; }
+        bgGlowAlpha += (targetBgGlowAlpha - bgGlowAlpha) * 0.05;
+        if (bgGlowAlpha > 0.01) { ctx.save(); ctx.globalAlpha = bgGlowAlpha; const g = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H)*0.8); g.addColorStop(0, hexToRGBA(selectedPlanetColor, 0.3)); g.addColorStop(0.5, hexToRGBA(selectedPlanetColor, 0.08)); g.addColorStop(1, hexToRGBA(selectedPlanetColor, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+        
+        bgStars.forEach(s => { const a = s.alpha + Math.sin(time*2+s.twinklePhase)*0.15; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fillStyle = `rgba(241,237,255,${a})`; ctx.fill(); });
+        
+        let isMob = W <= 768, tX = W/2, tY = H/2;
+        if (!isMob) { const sb = document.getElementById('sidebar'); if (sb && sb.classList.contains('open')) tX += 140; if (selectedEmotion) tX -= 180; }
+        else if (selectedEmotion) tY -= H*0.15;
 
-        const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.7);
-        bgGrad.addColorStop(0, '#2b201a'); bgGrad.addColorStop(0.5, '#1f1610'); bgGrad.addColorStop(1, '#0d0907');
-        ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
-
-        bgStars.forEach(s => {
-            const a = s.alpha + Math.sin(time * 2 + s.twinklePhase) * 0.15;
-            ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(241, 237, 255, ${a})`; ctx.fill();
+        if (draggedPlanet) { targetUniverseCenter.x = mouse.x; targetUniverseCenter.y = mouse.y; } else { targetUniverseCenter.x = tX; targetUniverseCenter.y = tY; }
+        universeCenter.x += (targetUniverseCenter.x-universeCenter.x)*0.08; universeCenter.y += (targetUniverseCenter.y-universeCenter.y)*0.08;
+        
+        let spreadT = (!draggedPlanet && !selectedEmotion) ? Math.max(0, 1-Math.hypot(mouse.x-universeCenter.x, mouse.y-universeCenter.y)/350) : 0;
+        currentSpread += (spreadT-currentSpread)*0.1;
+        
+        planets.forEach((pl, i) => {
+            pl.orbitAngle += pl.orbitSpeed * (1 + currentSpread*4);
+            let isS = (selectedEmotion === pl.emotion), pTX, pTY;
+            if (isS && !draggedPlanet) { pTX = universeCenter.x; pTY = universeCenter.y; pl.x += (pTX-pl.x)*0.08; pl.y += (pTY-pl.y)*0.08; }
+            else if (draggedPlanet === pl) { pl.x = universeCenter.x; pl.y = universeCenter.y; }
+            else {
+                let orgR = (isMob ? 50 : 85) + i*(isMob ? 12 : 18);
+                pl.currentOrbitR += (pl.baseOrbitR*(1-currentSpread)+orgR*currentSpread - pl.currentOrbitR)*0.1;
+                pTX = universeCenter.x + Math.cos(pl.orbitAngle)*pl.currentOrbitR; pTY = universeCenter.y + Math.sin(pl.orbitAngle)*pl.currentOrbitR;
+                pl.x += (pTX-pl.x)*0.2; pl.y += (pTY-pl.y)*0.2;
+            }
         });
 
-        const cxOffset = (W + 280) / 2;
-        planets.forEach(pl => {
-            pl.orbitAngle += pl.orbitSpeed;
-            pl.x = cxOffset + Math.cos(pl.orbitAngle) * pl.orbitR;
-            pl.y = H/2 + Math.sin(pl.orbitAngle) * pl.orbitR;
-        });
+        let newH = null;
+        for (let i = planets.length-1; i >= 0; i--) { const pl = planets[i]; if (!draggedPlanet && Math.hypot(mouse.x-pl.x, mouse.y-pl.y) < pl.r*1.5) { newH = pl; break; } }
+        if (draggedPlanet) newH = draggedPlanet;
+        if (newH !== hoveredPlanet) { hoveredPlanet = newH; const tt = document.getElementById('tooltip'); if (hoveredPlanet && !draggedPlanet) { canvas.style.cursor = 'pointer'; tt.classList.add('visible'); document.getElementById('ttName').textContent = hoveredPlanet.emotion; document.getElementById('ttCount').textContent = 'Haz clic para explorar'; } else { canvas.style.cursor = draggedPlanet ? 'grabbing' : 'default'; tt.classList.remove('visible'); } }
+        if (hoveredPlanet && !draggedPlanet) { const tt = document.getElementById('tooltip'); tt.style.left = (mouse.x+16)+'px'; tt.style.top = (mouse.y-10)+'px'; }
 
         particles.forEach(p => {
-            const pl = planets[p.planetIdx];
-            if (!pl) return;
-            const targetAlpha = (selectedEmotion && selectedEmotion !== pl.emotion) ? 0.08 : p.alpha;
-            
-            p.driftAngle += p.driftSpeed;
-            p.offsetX = p.baseOffX + Math.cos(p.driftAngle) * p.driftR;
-            p.offsetY = p.baseOffY + Math.sin(p.driftAngle) * p.driftR;
-
-            const twinkle = 0.5 + Math.sin(time * 3 + p.twinkle) * 0.3;
-            ctx.beginPath(); ctx.arc(pl.x + p.offsetX, pl.y + p.offsetY, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = hexToRGBA(p.color, targetAlpha * twinkle); ctx.fill();
+            const pl = planets[p.planetIdx]; if (!pl) return;
+            const isDim = selectedEmotion && selectedEmotion !== pl.emotion;
+            p.driftAngle += p.driftSpeed; p.offsetX = p.baseOffX + Math.cos(p.driftAngle)*p.driftR; p.offsetY = p.baseOffY + Math.sin(p.driftAngle)*p.driftR;
+            const twinkle = 0.5 + Math.sin(time*3+p.twinkle)*0.3;
+            ctx.beginPath(); ctx.arc(pl.x + p.offsetX, pl.y + p.offsetY, p.r, 0, Math.PI*2);
+            ctx.fillStyle = hexToRGBA(p.color, (isDim ? 0.05 : 0.15) * twinkle); ctx.fill();
         });
 
         planets.forEach(pl => {
-            const isHovered = hoveredPlanet === pl;
-            const isDimmed = selectedEmotion && selectedEmotion !== pl.emotion;
-            const currentR = pl.r * (1 + Math.sin(time * 1.5 + pl.pulsePhase) * 0.08) * (isHovered ? 1.12 : 1);
-            const alpha = isDimmed ? 0.12 : 1;
+            const isH = hoveredPlanet === pl, isD = selectedEmotion && selectedEmotion !== pl.emotion;
+            const currentR = pl.r * (1+Math.sin(time*1.5+pl.pulsePhase)*0.08) * (isH ? 1.12 : 1);
+            const baseAlpha = isD ? 0.08 : 0.2;
 
-            if (!isDimmed) {
-                const glow = ctx.createRadialGradient(pl.x, pl.y, currentR * 0.3, pl.x, pl.y, currentR * 2.5);
-                glow.addColorStop(0, hexToRGBA(pl.color, 0.15 * alpha)); glow.addColorStop(1, hexToRGBA(pl.color, 0));
-                ctx.beginPath(); ctx.arc(pl.x, pl.y, currentR * 2.5, 0, Math.PI * 2);
-                ctx.fillStyle = glow; ctx.fill();
+            if (!isD) {
+                const g = ctx.createRadialGradient(pl.x, pl.y, currentR*0.3, pl.x, pl.y, currentR*2.5);
+                g.addColorStop(0, hexToRGBA(pl.color, 0.15 * baseAlpha)); g.addColorStop(1, hexToRGBA(pl.color, 0));
+                ctx.beginPath(); ctx.arc(pl.x, pl.y, currentR*2.5, 0, Math.PI*2); ctx.fillStyle = g; ctx.fill();
             }
 
-            const coreGrad = ctx.createRadialGradient(pl.x - currentR*0.3, pl.y - currentR*0.3, 0, pl.x, pl.y, currentR);
-            coreGrad.addColorStop(0, hexToRGBA(lightenColor(pl.color, 40), 0.7 * alpha));
-            coreGrad.addColorStop(0.6, hexToRGBA(pl.color, 0.5 * alpha));
-            coreGrad.addColorStop(1, hexToRGBA(pl.color, 0.15 * alpha));
             ctx.beginPath(); ctx.arc(pl.x, pl.y, currentR, 0, Math.PI * 2);
-            ctx.fillStyle = coreGrad; ctx.fill();
+            ctx.fillStyle = hexToRGBA(pl.color, baseAlpha); ctx.fill();
 
-            if (!isDimmed) {
-                ctx.save();
-                ctx.font = `${Math.max(10, currentR * 0.35)}px 'Caveat', cursive`;
-                ctx.textAlign = 'center'; ctx.fillStyle = `rgba(253, 250, 244, ${0.85 * alpha})`;
-                ctx.fillText(pl.emotion, pl.x, pl.y + currentR + 16);
-                ctx.font = `${Math.max(8, currentR * 0.2)}px 'Poppins', sans-serif`;
-                ctx.fillStyle = `rgba(184, 169, 154, ${0.7 * alpha})`;
-                ctx.fillText(`×${pl.data.weight}`, pl.x, pl.y + currentR + 28);
-                ctx.restore();
+            ctx.fillStyle = pl.color; ctx.globalAlpha = baseAlpha; ctx.beginPath();
+            pl.grains.forEach(g => {
+                g.angle += g.speed + (Math.random()-0.5)*0.05;
+                let rJ = currentR + g.baseOffset + (Math.random()-0.5)*4;
+                ctx.rect(pl.x + Math.cos(g.angle)*rJ, pl.y + Math.sin(g.angle)*rJ, g.size, g.size);
+            });
+            ctx.fill(); ctx.globalAlpha = 1.0;
+
+            if (!isD) {
+                ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4;
+                const textAlpha = isD ? 0.2 : 1;
+                ctx.font = `500 ${Math.max(10, currentR*0.35)}px 'Montserrat'`; ctx.fillStyle = `rgba(253, 250, 244, ${textAlpha})`; ctx.fillText(pl.emotion.toUpperCase(), pl.x, pl.y-currentR*0.12);
+                ctx.font = `400 ${Math.max(7, currentR*0.16)}px 'Poppins'`; ctx.fillStyle = `rgba(253, 250, 244, ${textAlpha*0.9})`; ctx.fillText(`${pl.data.weight} historias`, pl.x, pl.y+currentR*0.28); ctx.restore();
             }
         });
-
         animFrame = requestAnimationFrame(drawFrame);
     }
 
-    // ─── UTILITIES ───
-    function hexToRGBA(hex, a) {
-        const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
-        return `rgba(${r},${g},${b},${a})`;
-    }
-    function lightenColor(hex, percent) {
-        let r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
-        r = Math.min(255, r + Math.floor(percent * 2.55)); g = Math.min(255, g + Math.floor(percent * 2.55)); b = Math.min(255, b + Math.floor(percent * 2.55));
-        return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
-    }
+    function hexToRGBA(h, a) { if(!h || !h.startsWith('#')) return `rgba(255,255,255,${a})`; const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; }
+    
+    canvas.addEventListener('mousedown', (e) => { dragDist = 0; if (hoveredPlanet) { draggedPlanet = hoveredPlanet; canvas.style.cursor = 'grabbing'; document.getElementById('tooltip').classList.remove('visible'); } });
+    canvas.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; if (draggedPlanet) dragDist += Math.abs(e.movementX) + Math.abs(e.movementY); });
+    canvas.addEventListener('mouseup', () => { canvas.style.cursor = hoveredPlanet ? 'pointer' : 'default'; if (draggedPlanet) { if (dragDist < 10) showInsight(draggedPlanet.data, draggedPlanet.color); draggedPlanet = null; } else if (hoveredPlanet) showInsight(hoveredPlanet.data, hoveredPlanet.color); else hideInsight(); });
+    
+    document.addEventListener('keydown', (e) => { if (!selectedEmotion) return; if (e.key === 'ArrowRight') navigateInsight(1); else if (e.key === 'ArrowLeft') navigateInsight(-1); });
 
-    // ─── INTERACTIONS ───
-    canvas.addEventListener('mousemove', (e) => {
-        mouse.x = e.clientX; mouse.y = e.clientY;
-        hoveredPlanet = null;
-        for (const pl of planets) {
-            if (Math.sqrt((e.clientX - pl.x)**2 + (e.clientY - pl.y)**2) < pl.r * 1.5) { hoveredPlanet = pl; break; }
-        }
-
-        const tooltip = document.getElementById('tooltip');
-        if (hoveredPlanet) {
-            canvas.style.cursor = 'pointer'; tooltip.classList.add('visible');
-            tooltip.style.left = (e.clientX + 16) + 'px'; tooltip.style.top = (e.clientY - 10) + 'px';
-            document.getElementById('ttName').textContent = hoveredPlanet.emotion;
-            document.getElementById('ttCount').textContent = `Aparece ${hoveredPlanet.data.weight} veces (con filtros actuales)`;
-        } else {
-            canvas.style.cursor = 'default'; tooltip.classList.remove('visible');
-        }
-    });
-
-    canvas.addEventListener('click', () => {
-        if (hoveredPlanet) showInsight(hoveredPlanet.data, hoveredPlanet.color);
-        else hideInsight();
-    });
-
-    // ─── INSIGHT PANEL ───
-    function showInsight(emo, color) {
-        const panel = document.getElementById('insightPanel');
-        document.getElementById('insightDot').style.background = color;
-        document.getElementById('insightDot').style.setProperty('--glow', hexToRGBA(color, 0.5));
-        document.getElementById('insightTitle').textContent = emo.name;
-
-        const totalMentions = currentAggregatedData.emotions.reduce((s, e) => s + e.weight, 0);
-        const pct = ((emo.weight / totalMentions) * 100).toFixed(1);
-        document.getElementById('insightFreq').textContent = `${emo.weight} menciones — ${pct}% de las emociones filtradas`;
-
+    function showInsight(e, c) {
+        const p = document.getElementById('insightPanel'); document.getElementById('insightDot').style.background = c; document.getElementById('insightTitle').textContent = e.name;
+        const total = currentAggregatedData.emotions.reduce((s, x) => s+x.weight, 0); document.getElementById('insightFreq').textContent = `${e.weight} menciones — ${(e.weight/total*100).toFixed(1)}%`;
         let html = '';
-
-        // Gender
-        const gTotal = (emo.genders.Femenino || 0) + (emo.genders.Masculino || 0) + (emo.genders.Otro || 0) + (emo.genders['No Especificado'] || 0);
-        if (gTotal > 0) {
-            html += `<div class="insight-card"><h4>Género</h4><div class="insight-bar-container">
-                ${emo.genders.Femenino ? makeBar('Femenino', emo.genders.Femenino, gTotal, '#e85d75') : ''}
-                ${emo.genders.Masculino ? makeBar('Masculino', emo.genders.Masculino, gTotal, '#4a7fa5') : ''}
-                ${emo.genders.Otro || emo.genders['No Especificado'] ? makeBar('Otro/NR', (emo.genders.Otro||0)+(emo.genders['No Especificado']||0), gTotal, '#a48976') : ''}
-            </div></div>`;
-        }
-
-        // Ages
-        const aTotal = Object.values(emo.ages).reduce((s,v) => s+v, 0);
-        if (aTotal > 0) {
-            html += `<div class="insight-card"><h4>Edades</h4><div class="insight-bar-container">
-                ${Object.entries(emo.ages).filter(([k,v]) => v > 0).sort().map(([k, v]) => makeBar(k, v, aTotal, color)).join('')}
-            </div></div>`;
-        }
-
-        // Locations
-        const lTotal = Object.values(emo.locations).reduce((s,v) => s + v, 0);
-        if (lTotal > 0) {
-            html += `<div class="insight-card"><h4>Ubicación</h4><div class="insight-bar-container">
-                ${Object.entries(emo.locations).filter(([k,v]) => v > 0).map(([k,v]) => makeBar(k, v, lTotal, '#d4a03c')).join('')}
-            </div></div>`;
-        }
-
-        // Contexts
-        if (emo.contexts && emo.contexts.length > 0) {
-            html += `<div class="insight-card"><h4>Dimensiones Identitarias</h4><div class="context-tags">
-                ${emo.contexts.map(c => `<span class="context-tag">${c}</span>`).join('')}
-            </div></div>`;
-        }
-
-        // AI Sample
-        if (emo.sampleTexts && emo.sampleTexts.length > 0) {
-            html += `<div class="insight-card" style="grid-column: span 2;"><h4>Fragmentos de Análisis Emocional</h4>
-                <div style="display:flex;flex-direction:column;gap:8px;">
-                    ${emo.sampleTexts.map(t => `<p style="font-size:0.7rem;color:var(--text-muted);line-height:1.6;padding:8px;background:rgba(255,255,255,0.03);border-left:2px solid ${color};font-style:italic;">"${t}"</p>`).join('')}
-                </div></div>`;
-        }
-
-        document.getElementById('insightGrid').innerHTML = html;
-        panel.classList.add('visible');
-
-        selectedEmotion = emo.name;
-        document.querySelectorAll('.emotion-btn').forEach(b => {
-            b.classList.toggle('active', b.textContent.includes(emo.name));
-        });
+        const gT = (e.genders.Femenino||0)+(e.genders.Masculino||0)+(e.genders.Otro||0); if (gT > 0) html += `<div class="insight-card"><h4>Género</h4><div class="insight-bar-container">${e.genders.Femenino?makeBar('Femenino', e.genders.Femenino, gT, '#e85d75'):''}${e.genders.Masculino?makeBar('Masculino', e.genders.Masculino, gT, '#4a7fa5'):''}${e.genders.Otro?makeBar('Otro', e.genders.Otro, gT, '#ffffff'):''}</div></div>`;
+        const aT = Object.values(e.ages).reduce((s, v) => s+v, 0); if (aT > 0) html += `<div class="insight-card"><h4>Edades</h4><div class="insight-bar-container">${Object.entries(e.ages).filter(([k,v])=>v>0).sort().map(([k,v])=>makeBar(k,v,aT,c)).join('')}</div></div>`;
+        if (e.contexts.length) html += `<div class="insight-card"><h4>Dimensiones</h4><div class="context-tags">${e.contexts.map(ctx => `<span class="context-tag">${ctx}</span>`).join('')}</div></div>`;
+        if (e.sampleTexts.length) html += `<div class="insight-card"><h4>Fragmentos</h4>${e.sampleTexts.map(t => `<p style="font-size:0.7rem;color:var(--text-muted);line-height:1.6;padding:8px;background:rgba(255,255,255,0.03);border-left:2px solid ${c};font-style:italic;margin-bottom:8px;">"${t}"</p>`).join('')}</div>`;
+        document.getElementById('insightGrid').innerHTML = html; p.classList.add('visible'); document.getElementById('insightNav').classList.add('visible'); selectedEmotion = e.name; updateEmotionListSidebar(currentAggregatedData.emotions);
     }
-
-    function makeBar(label, val, total, color) {
-        const pct = total > 0 ? (val / total * 100) : 0;
-        return `<div class="insight-bar-row"><span class="insight-bar-label">${label}</span>
-            <div class="insight-bar-track"><div class="insight-bar-fill" style="width:${pct}%;background:${color}"></div></div>
-            <span class="insight-bar-value">${val}</span></div>`;
-    }
-
-    function hideInsight() {
-        document.getElementById('insightPanel').classList.remove('visible');
-        selectedEmotion = null;
-        document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('.btn-all')?.classList.add('active');
-    }
-
+    
+    function makeBar(l, v, t, c) { const p = t>0?(v/t*100):0; return `<div class="insight-bar-row"><span class="insight-bar-label">${l}</span><div class="insight-bar-track"><div class="insight-bar-fill" style="width:${p}%;background:${c}"></div></div><span class="insight-bar-value">${v}</span></div>`; }
+    function hideInsight() { document.getElementById('insightPanel').classList.remove('visible'); document.getElementById('insightNav').classList.remove('visible'); selectedEmotion = null; updateEmotionListSidebar(currentAggregatedData.emotions); }
+    function navigateInsight(d) { const ems = currentAggregatedData.emotions; const i = ems.findIndex(e => e.name === selectedEmotion); if (i === -1) return; let ni = (i+d+ems.length)%ems.length; showInsight(ems[ni], getEmotionColor(ems[ni].name)); }
+    
+    document.getElementById('prevInsightBtn').onclick = () => navigateInsight(-1);
+    document.getElementById('nextInsightBtn').onclick = () => navigateInsight(1);
     document.getElementById('closeInsight').onclick = hideInsight;
-
-    // ─── CONFIG & INIT ───
-    document.getElementById('configToggle').onclick = () => document.getElementById('configPanel').classList.add('active');
+    document.getElementById('dataModeBtn').onclick = () => document.getElementById('configPanel').classList.add('active');
     document.getElementById('closeConfig').onclick = () => document.getElementById('configPanel').classList.remove('active');
     document.getElementById('sidebarToggle').onclick = () => document.getElementById('sidebar').classList.add('open');
 
     document.getElementById('btnConnect').onclick = async () => {
-        let input = document.getElementById('sheetId').value.trim();
-        const sheetName = document.getElementById('sheetName').value.trim() || 'Sheet1';
-        const status = document.getElementById('connStatus');
-
-        if (!input) { status.className = 'status error'; status.textContent = 'Ingresa un ID o URL.'; return; }
-
-        let url = input.startsWith('http') ? (input.includes('output=csv') ? input : input + '&output=csv') 
-                  : `https://docs.google.com/spreadsheets/d/${input}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-
-        status.className = 'status'; status.style.display = 'block'; status.textContent = 'Conectando...';
-
+        let i = document.getElementById('sheetId').value.trim(), n = document.getElementById('sheetName').value.trim()||'Sheet1', s = document.getElementById('connStatus');
+        if (!i) { s.className = 'status error'; s.textContent = 'Ingresa ID o URL'; return; }
+        let url = i.startsWith('http') ? (i.includes('output=csv')?i:i+'&output=csv') : `https://docs.google.com/spreadsheets/d/${i}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(n)}`;
+        s.className = 'status'; s.style.display = 'block'; s.textContent = 'Conectando...';
         try {
             globalRawParticipants = await loadFromCSVUrl(url);
             activeFilters = { gender: null, ageGroup: null, location: null, context: null };
-            applyFilters();
-            buildSidebarUI();
-            
-            status.className = 'status success'; status.textContent = `Conectado. ${globalRawParticipants.length} participantes reales cargados.`;
+            applyFilters(); buildSidebarUI();
+            s.className = 'status success'; s.textContent = `Conectado: ${globalRawParticipants.length} registros.`;
             document.getElementById('dataModeDot').classList.add('live');
-            document.getElementById('dataModeLabel').textContent = `Datos en vivo — N=${globalRawParticipants.length}`;
-            document.getElementById('configToggle').textContent = '● Conectado';
-            document.getElementById('configToggle').style.borderColor = '#4caf50';
-        } catch (err) {
-            status.className = 'status error'; status.textContent = err.message;
-        }
+            document.getElementById('dataModeLabel').textContent = `Vivo: N=${globalRawParticipants.length}`;
+            setTimeout(() => document.getElementById('configPanel').classList.remove('active'), 2000);
+        } catch (e) { s.className = 'status error'; s.textContent = e.message; }
     };
 
     resize();
-
     (async function boot() {
-        // Init with Demo Participants mapped specifically to support the filters
         globalRawParticipants = generateDemoParticipants();
-        applyFilters();
-        buildSidebarUI();
-        document.getElementById('sidebar').classList.add('open'); // Open sidebar by default on load
+        applyFilters(); buildSidebarUI();
+        document.getElementById('sidebar').classList.add('open');
         drawFrame();
-
         try {
-            console.log('🔗 Conectando a Google Sheets en vivo...');
-            globalRawParticipants = await loadFromCSVUrl(LIVE_CSV_URL);
-            activeFilters = { gender: null, ageGroup: null, location: null, context: null };
-            applyFilters();
-            buildSidebarUI();
-            
-            document.getElementById('dataModeDot').classList.add('live');
-            document.getElementById('dataModeLabel').textContent = `Datos en vivo — N=${globalRawParticipants.length}`;
-            document.getElementById('configToggle').textContent = '● Conectado';
-            document.getElementById('configToggle').style.borderColor = '#4caf50';
-            console.log('✅ Datos cargados exitosamente');
-        } catch (err) {
-            console.warn('⚠️ No se pudo conectar a Google Sheets, usando datos de demostración:', err.message);
-        }
-
+            const liveParticipants = await loadFromCSVUrl(LIVE_CSV_URL);
+            if (liveParticipants && liveParticipants.length > 0) {
+                globalRawParticipants = liveParticipants;
+                applyFilters(); buildSidebarUI();
+                document.getElementById('dataModeDot').classList.add('live');
+                document.getElementById('dataModeLabel').textContent = `Vivo: N=${globalRawParticipants.length}`;
+            }
+        } catch (e) { console.warn('⚠️ Fallback a demo:', e.message); }
         setTimeout(() => document.getElementById('loadingOverlay').classList.add('hidden'), 1200);
     })();
     </script>
