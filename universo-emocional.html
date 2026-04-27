@@ -160,66 +160,6 @@
         }
         .close-panel-btn:hover { color: var(--text-light); }
 
-        /* ─── CONFIG PANEL ─── */
-        .config-panel {
-            position: fixed;
-            top: 60px;
-            right: 30px;
-            z-index: 200;
-            background: var(--panel-bg);
-            border: 1px solid var(--border-glow);
-            border-radius: 16px;
-            padding: 40px 24px 24px 24px;
-            width: 380px;
-            display: none;
-            backdrop-filter: blur(20px);
-        }
-
-        .config-panel.active { display: block; }
-
-        .config-panel h3 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            color: var(--accent);
-        }
-
-        .config-panel p {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-            line-height: 1.6;
-        }
-
-        .config-panel input {
-            width: 100%;
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border-glow);
-            border-radius: 10px;
-            color: var(--text-light);
-            font-size: 0.8rem;
-            font-family: 'Poppins', sans-serif;
-            margin-bottom: 8px;
-        }
-
-        .config-panel .btn-connect {
-            width: 100%;
-            padding: 10px;
-            background: linear-gradient(135deg, #333333, #000000);
-            border: 1px solid var(--border-glow);
-            border-radius: 10px;
-            color: var(--text-light);
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s;
-            margin-top: 8px;
-        }
-        .config-panel .btn-connect:hover { opacity: 0.85; }
-
         /* ─── ENHANCED SIDEBAR WITH FILTERS (LEFT SIDE) ─── */
         .sidebar {
             position: fixed;
@@ -529,10 +469,9 @@
             font-size: 0.6rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
             display: flex; align-items: center; gap: 6px;
             background: rgba(0, 0, 0, 0.6); padding: 8px 14px; border-radius: 20px;
-            border: 1px solid var(--border-glow); cursor: pointer; backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glow); pointer-events: none; backdrop-filter: blur(10px);
             transition: all 0.3s;
         }
-        .data-mode:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-light); }
         .data-mode .dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; }
         .data-mode .dot.live { background: #4caf50; animation: pulse 2s infinite; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -589,16 +528,6 @@
         Filtros
     </button>
 
-    <div class="config-panel" id="configPanel">
-        <button class="close-panel-btn" id="closeConfig">✕</button>
-        <h3>Conectar Base de Datos</h3>
-        <p>Ingresa la URL del CSV o el ID del spreadsheet.</p>
-        <input type="text" id="sheetId" placeholder="URL del CSV o ID del Google Sheet">
-        <input type="text" id="sheetName" placeholder="Nombre de la hoja (ej: Sheet1)" value="Sheet1">
-        <button class="btn-connect" id="btnConnect">Conectar y Cargar Datos</button>
-        <div class="status" id="connStatus"></div>
-    </div>
-
     <div class="sidebar" id="sidebar"></div>
 
     <div class="tooltip" id="tooltip">
@@ -622,10 +551,10 @@
         <div class="insight-grid" id="insightGrid"></div>
     </div>
 
-    <button class="data-mode" id="dataModeBtn" title="Configurar Conexión">
+    <div class="data-mode" id="dataModeBtn">
         <div class="dot" id="dataModeDot"></div>
-        <span id="dataModeLabel">Datos de demostración</span>
-    </button>
+        <span id="dataModeLabel">Cargando datos...</span>
+    </div>
 
     <script>
     const EMOTION_COLORS = {
@@ -905,41 +834,34 @@
     document.getElementById('prevInsightBtn').onclick = () => navigateInsight(-1);
     document.getElementById('nextInsightBtn').onclick = () => navigateInsight(1);
     document.getElementById('closeInsight').onclick = hideInsight;
-    document.getElementById('dataModeBtn').onclick = () => document.getElementById('configPanel').classList.add('active');
-    document.getElementById('closeConfig').onclick = () => document.getElementById('configPanel').classList.remove('active');
     document.getElementById('sidebarToggle').onclick = () => document.getElementById('sidebar').classList.add('open');
-
-    document.getElementById('btnConnect').onclick = async () => {
-        let i = document.getElementById('sheetId').value.trim(), n = document.getElementById('sheetName').value.trim()||'Sheet1', s = document.getElementById('connStatus');
-        if (!i) { s.className = 'status error'; s.textContent = 'Ingresa ID o URL'; return; }
-        let url = i.startsWith('http') ? (i.includes('output=csv')?i:i+'&output=csv') : `https://docs.google.com/spreadsheets/d/${i}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(n)}`;
-        s.className = 'status'; s.style.display = 'block'; s.textContent = 'Conectando...';
-        try {
-            globalRawParticipants = await loadFromCSVUrl(url);
-            activeFilters = { gender: null, ageGroup: null, location: null, context: null };
-            applyFilters(); buildSidebarUI();
-            s.className = 'status success'; s.textContent = `Conectado: ${globalRawParticipants.length} registros.`;
-            document.getElementById('dataModeDot').classList.add('live');
-            document.getElementById('dataModeLabel').textContent = `Vivo: N=${globalRawParticipants.length}`;
-            setTimeout(() => document.getElementById('configPanel').classList.remove('active'), 2000);
-        } catch (e) { s.className = 'status error'; s.textContent = e.message; }
-    };
 
     resize();
     (async function boot() {
+        // Iniciar con datos de demo
         globalRawParticipants = generateDemoParticipants();
-        applyFilters(); buildSidebarUI();
-        document.getElementById('sidebar').classList.add('open');
+        applyFilters(); 
+        buildSidebarUI();
+        // El sidebar ahora permanece cerrado al inicio para una vista limpia
+        document.getElementById('dataModeLabel').textContent = `Demo: N=${globalRawParticipants.length}`;
+        
         drawFrame();
+
+        // Intentar conectar a la hoja en vivo automáticamente
         try {
             const liveParticipants = await loadFromCSVUrl(LIVE_CSV_URL);
             if (liveParticipants && liveParticipants.length > 0) {
                 globalRawParticipants = liveParticipants;
-                applyFilters(); buildSidebarUI();
+                applyFilters(); 
+                buildSidebarUI();
                 document.getElementById('dataModeDot').classList.add('live');
                 document.getElementById('dataModeLabel').textContent = `Vivo: N=${globalRawParticipants.length}`;
             }
-        } catch (e) { console.warn('⚠️ Fallback a demo:', e.message); }
+        } catch (e) { 
+            console.warn('⚠️ Fallback a demo:', e.message); 
+            document.getElementById('dataModeLabel').textContent = `Local: N=${globalRawParticipants.length}`;
+        }
+        
         setTimeout(() => document.getElementById('loadingOverlay').classList.add('hidden'), 1200);
     })();
     </script>
