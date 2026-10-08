@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#08090c">
 <title>El Bolsillo de Atrás | El Clóset Expandido</title>
+<meta name="description" content="Confesiones convertidas en poemas. Archivo de El Clóset Expandido.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1140,6 +1141,9 @@ body::before, body::after, .workspace-shell::before,
 
       resize();
       createParticles();
+      // En móviles la animación puede quedar en pausa cuando el navegador
+      // recupera memoria; se retira igualmente para no bloquear la entrada.
+      window.setTimeout(release, 3500);
       loop();
     })();
 </script>
@@ -1232,7 +1236,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const nextBtn = document.getElementById('gallery-next');
 
   let poemsData = [];
-  let cardsState = [];
+  // Las facturas se crean bajo demanda en móvil. Conservamos el archivo
+  // completo en memoria, pero no cientos de capas gráficas simultáneas.
+  let cardsState = new Map();
+  const cardMemory = new Map();
+  const MOBILE_INITIAL_CARDS = 14;
+  const MOBILE_MAX_CARDS = 26;
+  let cardUseSerial = 0;
   let topZ = 20;
   let isMobile = false;
   let activeCardIndex = 0;
@@ -1467,7 +1477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const margin=isMobile?42:58;
     // Distribución irregular sobre TODO el viewport, sin reservar zonas para textos.
     const ring=(index%3)*.20+.36;
-    const angle=(index/Math.max(total,1))*Math.PI*6+Math.random()*.7;
+    const angle=(index*2.399963229728653)+Math.random()*.54;
     const cx=(rect.width-width)/2;
     const cy=(rect.height-height)/2;
     const rx=Math.max(25,(rect.width-width)*.50);
@@ -1539,6 +1549,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function bringToFront(card, updateActive = true) {
     topZ += 1;
     card.style.zIndex = topZ;
+    card.dataset.used = ++cardUseSerial;
     if (updateActive) {
       activeCardIndex = Number(card.dataset.index || 0);
       mobileCurrent.textContent = String(activeCardIndex + 1);
@@ -1559,45 +1570,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function positionCards() {
-    cardsState = [];
-    cardStage.innerHTML = '';
-    const fragment = document.createDocumentFragment();
-    poemsData.forEach((poem, index) => {
-      const imageUrl = IMAGE_URLS[index % IMAGE_URLS.length];
-      const cardContainer = document.createElement('div');
-      cardContainer.style.setProperty('--receipt-image', `url("${imageUrl}")`);
-      cardContainer.dataset.paperUrl = imageUrl;
-      cardContainer.className = 'card-container tap-ready';
-      cardContainer.tabIndex = 0;
-      cardContainer.dataset.index = index;
-      cardContainer.dataset.poemIndex = index + 1;
-      cardContainer.dataset.poemText = poem;
-      cardContainer.setAttribute('role', 'group');
-      cardContainer.setAttribute('aria-label', `Factura ${index + 1}, arrastrable`);
-      const pos = getInitialPosition(index, poemsData.length);
-      cardContainer.dataset.x = pos.x;
-      cardContainer.dataset.y = pos.y;
-      cardContainer.dataset.rotate = pos.rotate;
-      cardContainer.innerHTML = `<div class="card">
-        <div class="card-face card-front">${makeCardCover(index, poemsData.length, imageUrl)}</div>
-        <div class="card-face card-back">${makePoemBack(poem, index + 1, poemsData.length)}</div>
-      </div>`;
-      updateCardTransform(cardContainer);
-      topZ += 1;
-      cardContainer.style.zIndex = topZ;
-      attachCardInteractions(cardContainer);
-      fragment.appendChild(cardContainer);
-      cardsState.push(cardContainer);
-      setTimeout(() => cardContainer.classList.remove('tap-ready'), 500);
+  function rememberCard(card) {
+    const index = Number(card.dataset.index);
+    cardMemory.set(index, {
+      x: Number(card.dataset.x),
+      y: Number(card.dataset.y),
+      rotate: Number(card.dataset.rotate),
+      flipped: card.classList.contains('flipped'),
+      readWidth: card.style.getPropertyValue('--read-w'),
+      readHeight: card.style.getPropertyValue('--read-h')
     });
-    cardStage.appendChild(fragment);
+  }
+
+  function limitMobileObjects(protectedIndex) {
+    if (!isMobile || cardsState.size <= MOBILE_MAX_CARDS) return;
+    // Se mantienen prioritariamente los poemas boca arriba y los recién usados.
+    const candidates = [...cardsState.entries()]
+      .filter(([index, card]) => index !== protectedIndex && card.dataset.turning !== '1')
+      .sort((a,b) => {
+        const openedDiff = Number(a[1].classList.contains('flipped')) - Number(b[1].classList.contains('flipped'));
+        return openedDiff || (Number(a[1].dataset.used || '0') - Number(b[1].dataset.used || '0'));
+      });
+    while (cardsState.size > MOBILE_MAX_CARDS && candidates.length) {
+      const [index, card] = candidates.shift();
+      rememberCard(card);
+      card.remove();
+      cardsState.delete(index);
+    }
+  }
+
+  function ensureCard(index) {
+    if (cardsState.has(index)) return cardsState.get(index);
+    const poem = poemsData[index];
+    if (poem === undefined) return null;
+    const imageUrl = IMAGE_URLS[index % IMAGE_URLS.length];
+    const cardContainer = document.createElement('div');
+    cardContainer.style.setProperty('--receipt-image', `url("${imageUrl}")`);
+    cardContainer.dataset.paperUrl = imageUrl;
+    cardContainer.className = 'card-container tap-ready';
+    cardContainer.tabIndex = 0;
+    cardContainer.dataset.index = index;
+    cardContainer.dataset.poemIndex = index + 1;
+    cardContainer.dataset.poemText = poem;
+    cardContainer.setAttribute('role', 'group');
+    cardContainer.setAttribute('aria-label', `Factura ${index + 1}, arrastrable`);
+    const memory = cardMemory.get(index);
+    const pos = memory || getInitialPosition(index, poemsData.length);
+    cardContainer.dataset.x = pos.x;
+    cardContainer.dataset.y = pos.y;
+    cardContainer.dataset.rotate = pos.rotate;
+    cardContainer.innerHTML = `<div class="card">
+      <div class="card-face card-front">${makeCardCover(index, poemsData.length, imageUrl)}</div>
+      <div class="card-face card-back">${makePoemBack(poem, index + 1, poemsData.length)}</div>
+    </div>`;
+    if (memory?.flipped) {
+      cardContainer.classList.add('flipped');
+      if (isMobile && memory.readWidth) {
+        cardContainer.style.setProperty('--read-w', memory.readWidth);
+        cardContainer.style.setProperty('--read-h', memory.readHeight);
+        cardContainer.classList.add('reading-size');
+      }
+    }
+    updateCardTransform(cardContainer);
+    cardContainer.style.zIndex = ++topZ;
+    cardContainer.dataset.used = ++cardUseSerial;
+    attachCardInteractions(cardContainer);
+    cardStage.appendChild(cardContainer);
+    cardsState.set(index, cardContainer);
+    // Eliminar clases de entrada durante el siguiente render, sin crear un temporizador por factura.
+    requestAnimationFrame(() => cardContainer.classList.remove('tap-ready'));
+    return cardContainer;
+  }
+
+  function positionCards(reset = false) {
+    if (reset) {
+      for (const card of cardsState.values()) rememberCard(card);
+      cardStage.replaceChildren();
+      cardsState.clear();
+    }
+    // Evita que Safari/Chrome móvil agoten memoria al dibujar cientos de facturas.
+    const initialCount = isMobile ? Math.min(poemsData.length, MOBILE_INITIAL_CARDS) : poemsData.length;
+    for (let i = 0; i < initialCount; i++) ensureCard(i);
     fitReceiptTitles();
-    if(document.fonts?.ready)document.fonts.ready.then(fitReceiptTitles);
-    if (cardsState.length) {
-      bringToFront(cardsState[cardsState.length - 1]);
-      activeCardIndex = cardsState.length - 1;
-      mobileCurrent.textContent = String(activeCardIndex + 1);
+    if (document.fonts?.ready) document.fonts.ready.then(fitReceiptTitles);
+    if (initialCount) {
+      const current = Math.min(initialCount - 1, poemsData.length - 1);
+      const card = ensureCard(current);
+      bringToFront(card);
+      limitMobileObjects(current);
     }
   }
 
@@ -1770,10 +1830,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function focusRelativeCard(direction) {
-    if (!cardsState.length) return;
-    activeCardIndex = (activeCardIndex + direction + cardsState.length) % cardsState.length;
-    const nextCard = cardsState[activeCardIndex];
+    if (!poemsData.length) return;
+    activeCardIndex = (activeCardIndex + direction + poemsData.length) % poemsData.length;
+    // Las flechas permiten alcanzar todos los poemas, aunque aún no se hayan dibujado.
+    const nextCard = ensureCard(activeCardIndex);
+    if (!nextCard) return;
     bringToFront(nextCard, false);
+    limitMobileObjects(activeCardIndex);
     mobileCurrent.textContent = String(activeCardIndex + 1);
     if (!checkIsMobile()) nextCard.focus({ preventScroll: true });
   }
@@ -1833,18 +1896,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   prevBtn.addEventListener('click', () => focusRelativeCard(-1));
   nextBtn.addEventListener('click', () => focusRelativeCard(1));
+  let lastWindowWidth = window.innerWidth;
+  let resizeFrame = 0;
   window.addEventListener('resize', () => {
-    const wasMobile = isMobile;
-    isMobile = checkIsMobile();
-    if (poemsData.length) {
-      const mobileChanged = wasMobile !== isMobile;
-      if (mobileChanged) {
-        positionCards();
-      } else {
-        positionCards();
+    // Las barras del navegador móvil hacen variar innerHeight continuamente:
+    // no se reconstruyen las facturas ni se vuelven a consultar los datos.
+    if (resizeFrame) cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = 0;
+      const nextWidth = window.innerWidth;
+      const nextMobile = checkIsMobile();
+      const modeChanged = nextMobile !== isMobile;
+      if (!modeChanged && Math.abs(nextWidth - lastWindowWidth) < 2) return;
+      lastWindowWidth = nextWidth;
+      isMobile = nextMobile;
+      if (!poemsData.length) return;
+      if (modeChanged) {
+        positionCards(true);
+        return;
       }
-    }
-  });
+      // En cambios reales de ancho, se conservan las posiciones y caras de las facturas.
+      const bounds = cardStage.getBoundingClientRect();
+      for (const card of cardsState.values()) {
+        const width = card.offsetWidth, height = card.offsetHeight;
+        const x = clamp(Number(card.dataset.x), -width + 58, Math.max(0,bounds.width - 58));
+        const y = clamp(Number(card.dataset.y), -height + 70, Math.max(0,bounds.height - 70));
+        if (x !== Number(card.dataset.x) || y !== Number(card.dataset.y)) {
+          card.dataset.x = x; card.dataset.y = y; updateCardTransform(card);
+        }
+      }
+      fitReceiptTitles();
+    });
+  }, {passive:true});
   poemModal.addEventListener('touchmove', (e) => {
     const content = e.target.closest('.poem-content');
     if (!content) e.preventDefault();
@@ -1897,11 +1980,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   resizeDust();
   renderDust();
+  let dustResizeTimer = 0;
   window.addEventListener('resize', () => {
-    if (dustFrame) cancelAnimationFrame(dustFrame);
-    resizeDust();
-    renderDust();
-  });
+    clearTimeout(dustResizeTimer);
+    dustResizeTimer = setTimeout(() => {
+      if (dustFrame) cancelAnimationFrame(dustFrame);
+      resizeDust();
+      renderDust();
+    }, 180);
+  }, {passive:true});
   initializeApp();
 });
 </script>
