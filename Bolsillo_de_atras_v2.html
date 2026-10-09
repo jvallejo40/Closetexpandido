@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
 @font-face { font-family:Mattone; src:local('Mattone Bold'),local('Mattone'),local('Mattone-Regular'); font-style:normal; font-weight:700 900; font-display:swap; }
 :root {
@@ -1314,31 +1314,80 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.textBaseline = 'alphabetic';
   }
 
-  // Exportación nativa: no depende de html2canvas ni del CDN.
-  // Primero usa la imagen original del papel (si el servidor autoriza su lectura
-  // desde el origen actual). Si lo impide CORS, genera un papel local de respaldo
-  // en vez de atribuir erróneamente el fallo a la conexión de Internet.
+  // Exportación de las mismas facturas que aparecen en el cajón.
+  // El navegador permite VER una imagen remota, pero no necesariamente copiarla
+  // a Canvas. Por eso se prueba el origen y luego un proxy de imágenes públicas
+  // que entrega una respuesta CORS. Nunca se envía el texto del poema al proxy.
   const paperCache = new Map();
-  const loadPaperForExport = (source) => {
-    if (paperCache.has(source)) return paperCache.get(source);
-    const promise = new Promise((resolve) => {
-      const src = new URL(source, window.location.href);
-      // Evita www/no-www como orígenes distintos al publicar en jaimesiva.com.
-      const locallyHosted = /(^|\.)jaimesiva\.com$/i.test(location.hostname);
-      const assetSrc = locallyHosted && src.hostname.replace(/^www\./,'') === location.hostname.replace(/^www\./,'')
-        ? src.pathname + src.search : src.href;
-      const image = new Image();
-      image.crossOrigin = 'anonymous';
-      let settled=false;
-      const settle = (value) => { if (!settled) {settled=true;resolve(value);} };
-      image.onload = () => settle(image);
-      image.onerror = () => settle(null);
-      image.src = assetSrc;
-      setTimeout(() => settle(null), 4500);
+
+  function exportImageCandidates(source) {
+    const absolute = new URL(source, window.location.href);
+    const candidates = [];
+    // Ruta relativa: evita diferencias entre www y dominio raíz cuando el
+    // documento se publica en el mismo servidor que sus imágenes.
+    if (/^(?:www\.)?jaimesiva\.com$/i.test(window.location.hostname) &&
+        /^(?:www\.)?jaimesiva\.com$/i.test(absolute.hostname)) {
+      candidates.push(absolute.pathname + absolute.search);
+    }
+    candidates.push(absolute.href);
+    // Copia pública CORS con transparencia PNG. Solo se usa si falla el origen.
+    // Servicio externo de imágenes: su disponibilidad no está garantizada.
+    const proxy = new URL('https://images.weserv.nl/');
+    proxy.searchParams.set('url', absolute.href);
+    proxy.searchParams.set('output', 'png');
+    candidates.push(proxy.href);
+    return [...new Set(candidates)];
+  }
+
+  function imageIsCanvasSafe(image) {
+    try {
+      const probe = document.createElement('canvas');
+      probe.width = 2;
+      probe.height = 2;
+      const probeCtx = probe.getContext('2d', {willReadFrequently:true});
+      probeCtx.drawImage(image, 0, 0, 2, 2);
+      probeCtx.getImageData(0, 0, 1, 1);
+      return true;
+    } catch (_) { return false; }
+  }
+
+  function loadSafeImage(source, timeoutMs) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      let settled = false;
+      const timer = setTimeout(() => finish(null), timeoutMs);
+      function finish(result) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        img.onload = null;
+        img.onerror = null;
+        resolve(result);
+      }
+      img.onload = () => finish(img.naturalWidth > 0 && imageIsCanvasSafe(img) ? img : null);
+      img.onerror = () => finish(null);
+      img.src = source;
     });
+  }
+
+  function loadPaperForExport(source) {
+    if (paperCache.has(source)) return paperCache.get(source);
+    const promise = (async () => {
+      const candidates = exportImageCandidates(source);
+      for (let i = 0; i < candidates.length; i++) {
+        // Si el original está bloqueado, no demorar excesivamente la descarga.
+        if (i > 0) showDownloadFeedback('Recuperando la textura original de la factura…');
+        const img = await loadSafeImage(candidates[i], i === candidates.length - 1 ? 7500 : 2000);
+        if (img) return img;
+      }
+      return null;
+    })();
     paperCache.set(source, promise);
+    // No guardar fallos transitorios: la próxima descarga puede reintentarse.
+    promise.then(result => { if (!result) paperCache.delete(source); });
     return promise;
-  };
+  }
 
   function drawPaperFallback(ctx, width, height, seed) {
     let value = 7171 + seed * 103;
@@ -1458,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvas=makeDownloadPage(poemText,poemIndex,totalPoems,paper,page+1,pages,fontSize,lines,page*perPage,Math.min(lines.length,(page+1)*perPage));
         await saveCanvasPng(canvas,`el-bolsillo-poema-${number}${pages>1?`-hoja-${page+1}`:''}.png`);
       }
-      showDownloadFeedback(paper ? `Descarga preparada: poema ${number} con su factura original.` : `Poema ${number} preparado. La imagen original no permitió exportación; se utilizó papel de respaldo.`);
+      showDownloadFeedback(paper ? `Descarga preparada: poema ${number} con la textura auténtica de su factura.` : `Poema ${number} preparado. La factura original no permitió exportación desde este navegador; revisa el permiso CORS de las imágenes del servidor.`);
     } catch (error) {
       console.error('No fue posible preparar la descarga del poema:',error);
       showDownloadFeedback('No se pudo preparar la imagen en este navegador. Intenta nuevamente.');
